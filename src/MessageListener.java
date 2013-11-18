@@ -1,6 +1,6 @@
 
 
-public interface LogListener {
+public interface MessageListener {
 
 	void messageAdded(String message);
 

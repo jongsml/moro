@@ -3,29 +3,29 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Logger {
+public class Messenger {
 
-	private List<LogListener> listeners = new ArrayList<LogListener>();
-	private LogListener listener;
-	private static Logger instance = null;
+	private List<MessageListener> listeners = new ArrayList<MessageListener>();
+	private MessageListener listener;
+	private static Messenger instance = null;
 	
-	   protected Logger() {
+	   protected Messenger() {
 	      // Exists only to defeat instantiation.
 	   }
-	   public synchronized static Logger getInstance() {
+	   public synchronized static Messenger getInstance() {
 	      if(instance == null) {
-	         instance = new Logger();
+	         instance = new Messenger();
 	      }
 	      return instance;
 	   }
 
-        public void addLogListener(LogListener listener) {
+        public void addLogListener(MessageListener listener) {
 		    listeners.add(listener);
 		}
 	   
 	   public void log(String message) {
            System.out.println(message);
-		   for (LogListener listener : listeners) {
+		   for (MessageListener listener : listeners) {
 		       System.out.println("PIEP");
 		   }
 		}
@@ -34,7 +34,7 @@ public class Logger {
 		   boolean listenerFound = false;
 		   int index = 0;
 		   
-		   LogListener[] listeners = getLogListeners();
+		   MessageListener[] listeners = getLogListeners();
 		   while(!listenerFound && index < listeners.length) {
 		    // check if listeners are the same object.
 		    listenerFound = (listeners[index] == listener);
@@ -44,7 +44,7 @@ public class Logger {
 		   return listenerFound;
 	   }
 	
-	   private LogListener[] getLogListeners() {
+	   private MessageListener[] getLogListeners() {
 		
 		return null;
 	}
