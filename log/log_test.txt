@@ -1,0 +1,2 @@
+nov 04, 2013 9:46:28 PM View.JLogger log
+INFO: Frame build en presented.
