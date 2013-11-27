@@ -25,7 +25,7 @@
  *               The most important tasks are rotating the laser and getting measurements
  *               from the environment.
  * Copyright:    Copyright (c) 2001
- * Company:      Università di Bergamo
+ * Company:      Universitï¿½ di Bergamo
  * @author Davide Brugali
  * @version 1.0
  */

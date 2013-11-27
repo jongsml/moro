@@ -94,6 +94,7 @@ public class Controller implements Runnable{
 			// The result is parsed to the method parsePosition to calculate the x,y position
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			//parses the collision results to parseMeasures
@@ -110,6 +111,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -125,6 +127,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -140,6 +143,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -155,6 +159,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -167,6 +172,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -182,6 +188,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -197,6 +204,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -212,6 +220,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -224,6 +233,7 @@ public class Controller implements Runnable{
 			result = input.readLine();
 			parsePosition(result, position);
 
+            robot.sendCommand("S1.SCAN");
 			robot.sendCommand("L1.SCAN");
 			result = input.readLine();
 			parseMeasures(result, measures);
@@ -262,10 +272,10 @@ public class Controller implements Runnable{
 		position[2] = Double.parseDouble(parameter);
 	}
 
-	
+
 	private void parseMeasures(String value, double measures[]) {
 		System.out.println(value);
-		
+
 		// Fills all angles with the maximum value of 100
 		// When a angle is not filled with a measure there was no collision
 		for(int i=0; i < 360; i++)
@@ -277,7 +287,7 @@ public class Controller implements Runnable{
 		StringTokenizer tokenizer = new StringTokenizer(value, " ");
 		double dist;
 		int dir;
-		
+
 		// Splits tokens into distance (first 3 characters) and angle (0 - 360)
 		while(tokenizer.hasMoreTokens()) {
 			dist = Double.parseDouble(tokenizer.nextToken().substring(2));

@@ -23,7 +23,7 @@
  * Title:        The MObile RObot Simulation Environment
  * Description:
  * Copyright:    Copyright (c) 2001
- * Company:      Università di Bergamo
+ * Company:      Universitï¿½ di Bergamo
  * @author Davide Brugali
  * @version 1.0
  */
@@ -40,6 +40,8 @@ public abstract class Device implements Runnable{
 	String name;                  // the name of this device
 	Environment environment;          // a reference to the environment
 	Polygon shape = new Polygon();        // the device's shape in local coords
+    Boolean fillShape = true;          // filled or not
+
 
 	// a reference to the robot
 	Robot robot;
@@ -76,27 +78,35 @@ public abstract class Device implements Runnable{
 		shape.addPoint(x, y);
 	}
 
-	// draws the device's geometric shape on the graphical interface
-	public void paint(Graphics g) {
-		// reads the robot's current position
-		robot.readPosition(robotPos);
-		// draws the shape
-		Polygon globalShape = new Polygon();
-		Point2D point = new Point2D.Double();
-		for(int i=0; i < shape.npoints; i++) {
-			point.setLocation(shape.xpoints[i], shape.ypoints[i]);
-			// calculates the coordinates of the point according to the local position
-			localPos.rototras(point);
-			// calculates the coordinates of the point according to the robot position
-			robotPos.rototras(point);
-			// adds the point to the global shape
-			globalShape.addPoint((int)Math.round(point.getX()),(int)Math.round(point.getY()));
-		}
-		((Graphics2D) g).setColor(bgColor);
-		((Graphics2D) g).fillPolygon(globalShape);
-		((Graphics2D) g).setColor(fgColor);
-		((Graphics2D) g).drawPolygon(globalShape);
-	}
+
+    protected void resetShape()
+    {
+        shape.reset();
+    }
+
+    public void paint(Graphics g)
+    {
+
+        // reads the robot's current position
+        robot.readPosition(robotPos);
+        // draws the shape
+        Polygon globalShape = new Polygon();
+        Point2D point = new Point2D.Double();
+        for (int i = 0; i < shape.npoints; i++)
+        {
+            point.setLocation(shape.xpoints[i], shape.ypoints[i]);
+            // calculates the coordinates of the point according to the local position
+            localPos.rototras(point);
+            // calculates the coordinates of the point according to the robot position
+            robotPos.rototras(point);
+            // adds the point to the global shape
+            globalShape.addPoint((int) Math.round(point.getX()), (int) Math.round(point.getY()));
+        }
+        ((Graphics2D) g).setColor(bgColor);
+        if (fillShape) ((Graphics2D) g).fillPolygon(globalShape);
+        ((Graphics2D) g).setColor(fgColor);
+        ((Graphics2D) g).drawPolygon(globalShape);
+    }
 
 	/*
 	 * Sends a command to the robot in a new thread

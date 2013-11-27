@@ -23,7 +23,7 @@
  * Title:        The MObile RObot Simulation Environment
  * Description:
  * Copyright:    Copyright (c) 2001
- * Company:      Università di Bergamo
+ * Company:      Universitï¿½ di Bergamo
  * @author Davide Brugali
  * @version 1.0
  */
@@ -44,6 +44,7 @@ public class Robot {
 		position = new Position(x, y, Math.toRadians(t));
 		platform = new Platform("P1", this, environment);
 		sensors.add(new Laser("L1", this, new Position(20.0, 0.0, 0.0), environment));
+        sensors.add(new Sonar("S1", this, new Position(20.0, 0.0, 0.0), environment));
 	}
 
 	/*
@@ -65,26 +66,19 @@ public class Robot {
 		}
 	}
 
-	/*
-	 * paints the sensors
-	 */
-	public void paint(Graphics g) {
-		platform.paint(g);
-		for(Device sensor: sensors ) {
-			sensor.paint(g);
-		}
-	}
+    public void paint(Graphics g)
+    {
+        platform.paint(g);
+        for (Device sensor : sensors)
+            sensor.paint(g);
+    }
 
-
-	/*
-	 * starts the robot and sensors
-	 */
-	public void start() {
-		platform.start();
-		for(Device sensor: sensors) {
-			sensor.start();
-		}
-	}
+    public void start()
+    {
+        platform.start();
+        for (Device sensor : sensors)
+            sensor.start();
+    }
 
 	/*
 	 * ?????
@@ -144,4 +138,18 @@ public class Robot {
 		laser.start();
 		laser.sendCommand("L1.SCAN");
 	}
+
+
+
+    public Object getDeviceByName(String name)
+    {
+        for (Device dev : sensors)
+            if (dev.name.equals(name))
+                return dev;
+        if (platform.name.equals(name))
+            return platform;
+        else if (this.name.equals(name))
+            return this;
+        return null;
+    }
 }
