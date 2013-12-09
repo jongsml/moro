@@ -17,111 +17,118 @@
  * 02111-1307  USA
  */
 
-// package moro;
+
+
+import java.awt.Color;
+import java.awt.Polygon;
 
 /**
- * Title:        The MObile RObot Project
- * Description:  The Obstacle represents an obstacle on the map. 
- * Copyright:    Copyright (c) 2001
- * Company:      Università di Bergamo
+ * Title: The MObile RObot Project Description: The Obstacle represents an
+ * obstacle on the map. Copyright: Copyright (c) 2001 Company: Universidi
+ * Bergamo
+ * 
  * @author Davide Brugali
  * @version 1.0
  */
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.io.BufferedReader;
-import java.io.IOException;
-
-public class Obstacle {
-	String name = "Obstacle";
+public class Obstacle
+{
+	// Default names.
+	private String name = "Obstacle";
 	// This polygon contains the cornerpoints of the obstacle.
-	Polygon polygon = new Polygon(); 
-	
-	Color bgColor = Color.orange;
-	Color fgColor = Color.blue;
-	boolean opaque = true;
-	
-	public Obstacle() {}
+	private Polygon polygon = null;
+
+	private Color bgColor = Color.orange;
+	private Color fgColor = Color.blue;
+	private boolean opaque = true;
+	private final int[][] points;
 
 	/**
-	 * Reads the <POINT X=".." Y=".."/> lines from the file and adds those points to the polygon
-	 * @param line The <OBSTACLE> line read in Environment.
-	 * @param lineReader The BufferedReader from which to read the <POINT ...> lines.
-	 * @return Whether or not the obstacle was built succesfully.
+	 * Class constructor.
+	 * @param name The name of the obstacle.
+	 * @param points The x+y points of the obstacle.
+	 * @param opaque Whether or not the obstacle is opaque.
 	 */
-	public boolean parseXML(String line, BufferedReader lineReader) {
-		// Extracts the parameters
-		name = parseAttribute(line, "NAME");
-		opaque = Boolean.valueOf(parseAttribute(line, "OPAQUE")).booleanValue();
-
-		String docLine;
-		try {
-			while ((docLine = lineReader.readLine())!=null) {
-				// reads the file line by line
-				if( docLine.indexOf("</OBSTACLE") > -1)
-					return true;
-				else
-					if( docLine.indexOf("<POINT") > -1)
-					{
-						// extracts the coordinates of a vertex
-						int px = Integer.parseInt(parseAttribute(docLine, "X"));
-						int py = Integer.parseInt(parseAttribute(docLine, "Y"));
-						// adds the new point to the shape
-						polygon.addPoint(px, py);
-					}
-					else
-						continue;
+	public Obstacle(String name, int[][] points, boolean opaque)
+	{
+		this.name = name;
+		this.opaque = opaque;
+		this.points = points;
+	}
+	
+	/**
+	 * Get a polygon representation for this obstacle.
+	 * @return
+	 */
+	public Polygon getPolygon()
+	{
+		// Create the polygon if it hasn't been done yet.
+		if (polygon == null)
+		{
+			polygon = new Polygon();
+			for (int i = 0; i < points.length; i++)
+			{
+				int[] xy = points[i];
+				polygon.addPoint(xy[0], xy[1]);
 			}
 		}
-		catch(IOException ioe)
-		{
-			ioe.printStackTrace();
-		}
-		return false;
+		
+		return polygon;
+	}
+	
+	/**
+	 * Get the name of this obstacle.
+	 * @return
+	 */
+	public String getName()
+	{
+		return name;
+	}
+	
+	/**
+	 * Get the background color of this obstacle.
+	 * @return
+	 */
+	public Color getBgColor()
+	{
+		return bgColor;
 	}
 
-	/*
-	 * Strips the value out of een String
+	/**
+	 * Get the foreground color of this obstacle.
+	 * @return
 	 */
-	private String parseAttribute(String line, String attribute) {
-		int indexInit = line.indexOf(attribute+"=");
-		String parameter = line.substring(indexInit+attribute.length()+2);
-		int indexEnd = parameter.indexOf('"');
-		String value = parameter.substring(0, indexEnd);
-		return value;
+	public Color getFgColor()
+	{
+		return fgColor;
 	}
 
-	/*
-	 * Creates xml for something
-	 * @see java.lang.Object#toString()
+	/**
+	 * Check whether or not this obstacle is opaque.
+	 * @return
 	 */
-	public String toString() {
-		String xml = "  <OBSTACLE NAME=" + '"' + name + '"' +
-		" OPAQUE="  + '"' + opaque + '"' +">\n";
-		for(int j=0; j<polygon.npoints; j++)
-			xml += "    <POINT X=" + '"' + polygon.xpoints[j]+'"'+" Y="+'"'+polygon.ypoints[j]+'"'+"/>\n";
+	public boolean isOpaque()
+	{
+		return opaque;
+	}
+	
+	/**
+	 * Return the array of points of this obstacle.
+	 * @return
+	 */
+	public int[][] getPoints()
+	{
+		return points;
+	}
+
+	@Override
+	public String toString()
+	{
+		String xml = "  <OBSTACLE NAME=" + '"' + name + '"' + " OPAQUE=" + '"' + opaque + '"'
+				+ ">\n";
+		for (int i = 0; i < points.length; i++)
+			xml += "    <POINT X=" + '"' + points[i][0] + '"' + " Y=" + '"'
+					+ points[i][1] + '"' + "/>\n";
 		xml += "  </OBSTACLE>";
 		return xml;
-	}
-
-	/*
-	 * sets parameter when creating graphics
-	 */
-	public void paint(Graphics g) {
-		Graphics2D graphics2D = (Graphics2D) g;
-		if(opaque) {
-			graphics2D.setColor(Color.magenta);
-			graphics2D.fillPolygon(polygon);
-			graphics2D.setColor(Color.darkGray);
-			graphics2D.drawPolygon(polygon);
-		}
-		else {
-			graphics2D.setColor(bgColor);
-			graphics2D.fillPolygon(polygon);
-			graphics2D.setColor(fgColor);
-			graphics2D.drawPolygon(polygon);
-		}
 	}
 }

@@ -17,7 +17,6 @@
  * 02111-1307  USA
  */
 
-// package moro;
 
 /**
  * Title:        The MObile RObot Simulation Environment
@@ -25,7 +24,7 @@
  *               The most important tasks are rotating the laser and getting measurements
  *               from the environment.
  * Copyright:    Copyright (c) 2001
- * Company:      Universit� di Bergamo
+ * Company:      Universit di Bergamo
  * @author Davide Brugali
  * @version 1.0
  */
@@ -88,12 +87,12 @@ public class Laser extends Device{
 			Obstacle obstacle = (Obstacle) environment.obstacles.get(i);
 			
 			// Checks if obstacle is a Wall
-			if(obstacle.opaque)
+			if(obstacle.isOpaque())
 				continue;
 			
 			// Uses pointToObstacle() to check if there is a collision with a obstacle
 			// and returns the distance to that obstacle
-			double dist = pointToObstacle(obstacle.polygon, centre, front, first);
+			double dist = pointToObstacle(obstacle.getPolygon(), centre, front, first);
 			
 			if(minDistance == -1.0 || (dist > 0 && dist < minDistance)) {
 				minDistance = dist;

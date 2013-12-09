@@ -23,12 +23,13 @@
  * Title:        The MObile RObot Simulation Environment
  * Description:
  * Copyright:    Copyright (c) 2001
- * Company:      Università di Bergamo
+ * Company:      Universit di Bergamo
  * @author Davide Brugali
  * @version 1.0
  */
 
 import java.awt.geom.Point2D;
+
 public class Position {
 	private double x = 0.0;
 	private double y = 0.0;
@@ -107,6 +108,20 @@ public class Position {
 		position.x = this.x;
 		position.y = this.y;
 		position.t = this.t;
+	}
+	
+	/**
+	 * Determine if this position object is close to "position".
+	 * A max offset/distance should be given to determine proximity.
+	 * @param position
+	 * @param maxXdistance If x is within this distance, it matches.
+	 * @param maxYdistance If y is within this distance, it matches.
+	 * @return
+	 */
+	public boolean closeTo(Position position, int maxXdistance, int maxYdistance)
+	{
+		return ((position.x > this.x-maxXdistance) && (position.x < this.x+maxXdistance) && 
+			    (position.y > this.y-maxYdistance) && (position.y < this.y+maxYdistance));
 	}
 
 	/*

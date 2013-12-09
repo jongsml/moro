@@ -23,7 +23,7 @@
  * Title:        The MObile RObot Simulation Environment
  * Description:
  * Copyright:    Copyright (c) 2001
- * Company:      Universit� di Bergamo
+ * Company:      Universit di Bergamo
  * @author Davide Brugali
  * @version 1.0
  */
@@ -36,7 +36,8 @@ import java.awt.geom.Point2D;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-public abstract class Device implements Runnable{
+public abstract class Device implements Runnable
+{
 	String name;                  // the name of this device
 	Environment environment;          // a reference to the environment
 	Polygon shape = new Polygon();        // the device's shape in local coords
@@ -54,7 +55,7 @@ public abstract class Device implements Runnable{
 	Color fgColor = Color.blue;
 
 	protected Thread thread = null;
-	protected long delay = 20;
+	protected long delay = 5;
 	protected boolean alive = false; // Is the device started?
 	protected boolean running = false; // Is the device executing a command?
 	protected Object lock = new Object();

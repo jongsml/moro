@@ -31,17 +31,21 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-/**
+/*
  * Title:        The MObile RObot Simulation Environment
  * Description:  This window shows what the robot discovers.
  * Copyright:    Copyright (c) 2002
- * Company:      Università di Bergamo
+ * Company:      Universi di Bergamo
  * @author       Davide Brugali
  * @version 1.0
  */
 
 @SuppressWarnings("serial")
-public class ControlWindow extends JFrame {
+public class ControlWindow extends JFrame 
+{
+	private MovingAlgorithm currentAlgorithm;
+
+	
 	JPanel contentPane;
 	JMenuBar menuBar = new JMenuBar();
 	JMenu menuSimulation = new JMenu();
@@ -82,14 +86,40 @@ public class ControlWindow extends JFrame {
 		// --------------------------- Panels --------------------------------------
 		setBounds(510, 0, 510, 460);
 		// draw the OccupancyMap
-		this.getContentPane().add(controller.map);
+		OccupancyMapView occupancyMapView = new OccupancyMapView();
+		controller.addActionListener(occupancyMapView);
+		this.getContentPane().add(occupancyMapView);
+		
 		this.setJMenuBar(menuBar);
+		
+		// Disable window resizing.
+		setResizable(false);
 	}
 
+	/**
+	 * Check if the current algoritm is running.
+	 * @return
+	 */
+	private boolean algorithmIsRunning()
+	{
+		if (currentAlgorithm != null && currentAlgorithm.isRunning())
+		{
+			System.out.println("Algorithm is currently running");
+			return true;
+		}
+		return false;
+	}
+	
 	// --------------------------- Menu actions ----------------------------------
 	/** Menu Simulation Start*/
-	void menuSimulationStart_actionPerformed(ActionEvent e) {
+	void menuSimulationStart_actionPerformed(ActionEvent e) 
+	{
+		// hierbij starten we het algoritme!
+		if (algorithmIsRunning())
+			return;
+		currentAlgorithm = new MoveAI();
 		controller.start();
+		currentAlgorithm.runAlgorithm(controller);
 	}
 
 	/** Menu Simulation Quit*/

@@ -17,139 +17,171 @@
  * 02111-1307  USA
  */
 
-// package moro;
-
-/**
- * Title:        The MObile RObot Simulation Environment
- * Description:
- * Copyright:    Copyright (c) 2001
- * Company:      Universit� di Bergamo
- * @author Davide Brugali
- * @version 1.0
- */
-
 import java.awt.Graphics;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-public class Robot {
+
+
+/**
+ * Title: The MObile RObot Simulation Environment Description: Copyright:
+ * Copyright (c) 2001 Company: Universit di Bergamo
+ * 
+ * @author Davide Brugali
+ * @version 1.0
+ */
+public class Robot
+{
 	String name;
-	Position position;
+	private Position position;
 	Platform platform;
-	ArrayList<Device> sensors = new ArrayList<Device>();
+	private ArrayList<Device> sensors = new ArrayList<Device>();
 	protected PrintWriter output = null;
 
-	public Robot(String name, double x, double y, double t, Environment environment) {
+	public Robot(String name, double x, double y, double t, Environment environment)
+	{
 		this.name = name;
 		position = new Position(x, y, Math.toRadians(t));
 		platform = new Platform("P1", this, environment);
 		sensors.add(new Laser("L1", this, new Position(20.0, 0.0, 0.0), environment));
-        sensors.add(new Sonar("S1", this, new Position(20.0, 0.0, 0.0), environment));
+		sensors.add(new Sonar("S1", this, new Position(20.0, 0.0, 0.0), environment));
+
 	}
 
-	/*
-	 * Reads the current position of the robot
-	 * and copies this to the x,y and t values
-	 */
-	public void readPosition(Position position) {
-		synchronized(this.position) {
+	void readPosition(Position position)
+	{
+		synchronized (this.position)
+		{
 			this.position.copyTo(position);
 		}
 	}
 
-	/*
-	 * Writes the x,y and t values to x,y and t
-	 */
-	public void writePosition(Position position) {
-		synchronized(this.position) {
+	void writePosition(Position position)
+	{
+		synchronized (this.position)
+		{
 			position.copyTo(this.position);
 		}
 	}
 
-    public void paint(Graphics g)
-    {
-        platform.paint(g);
-        for (Device sensor : sensors)
-            sensor.paint(g);
-    }
+	public void paint(Graphics g)
+	{
+		platform.paint(g);
+		for (Device sensor : sensors)
+			sensor.paint(g);
+	}
 
-    public void start()
-    {
-        platform.start();
-        for (Device sensor : sensors)
-            sensor.start();
-    }
+	public void start()
+	{
+		platform.start();
+		for (Device sensor : sensors)
+			sensor.start();
+	}
 
-	/*
-	 * ?????
-	 */
-	protected synchronized void writeOut(String data) {
-		if(output != null)
-			output.println(data);
+	protected synchronized void writeOut(String data)
+	{
+		if (output != null)
+			output.println("SRC=" + this.name + " " + data);
 		else
 			System.out.println(this.name + " output not initialized");
 	}
 
-	/*
-	 * Sends the commands to the platform or sensor
+	/**
+	 * Send the command. Returns the number of subdevices which commands got sent to.
+	 * @param command
+	 * @return
 	 */
-	public boolean sendCommand(String p_command) {
-		int indexInit = p_command.indexOf(".");
-		if(indexInit < 0)
-			return false;
-		String deviceName = p_command.substring(0, indexInit);
-		String command = p_command.substring(indexInit+1);
-
-		if(deviceName.equals(this.name) && command.equalsIgnoreCase("GETPOS")) {
-			writeOut("GETPOS X=" + position.getX() +
-					" Y=" + position.getY() +
-					" DIR=" + Math.toDegrees(position.getT()));
+	public int sendCommand(String command)
+	{
+		int numDelegates = 0;
+		if (command.equalsIgnoreCase("GETPOS"))
+		{
+			getPositionByCommand();
+			numDelegates = 1;
 		}
-		else if(deviceName.equals(platform.name))
-			return platform.sendCommand(command);
-		else
-			for(Device sensor: sensors ) {
-				if(deviceName.equals(sensor.name))
-					return sensor.sendCommand(command);
+		else if (isPlatformCommand(command))
+		{
+			platform.sendCommand(command);
+			numDelegates = 1;
+		}
+		else if (isSensorCommand(command))
+		{
+			// Send the command to all sensors. 
+			for (Device sensor : sensors)
+			{
+				sensor.sendCommand(command);
+				numDelegates++;
 			}
-		return false;
+		}
+		
+		return numDelegates;
+	}
+	
+	/**
+	 * Determine if the given command is a command which needs to be sent
+	 * to the Platform.
+	 * @param command
+	 * @return True if so, false otherwise.
+	 */
+	private boolean isPlatformCommand(String command)
+	{
+		return command.startsWith("ROTATE") || command.startsWith("MOVE") || 
+			command.startsWith("GETPOS"); 
+	}
+	
+	/**
+	 * Determine if a 
+	 * @param command
+	 * @return
+	 */
+	private boolean isSensorCommand(String command)
+	{
+		return 
+			command.startsWith("SCAN") || 
+			command.startsWith("GETMEASURES") ||
+			command.startsWith("DETECT") ||
+			command.startsWith("READ")
+			;
+	}
+	
+	public synchronized Position getPosition()
+	{
+		return new Position(position.getX(), position.getY(), position.getT());
+	}
+	
+	
+	private void getPositionByCommand()
+	{
+		writeOut("GETPOS X=" + position.getX() + " Y=" + position.getY() + " DIR="
+				+ Math.toDegrees(position.getT()));
 	}
 
-	/*
-	 * Sends the status output to the streamReader
+	/**
+	 * Set command output destination.
+	 * @param output The output destination PrintWriter.
 	 */
-	public void setOutput(PrintWriter output) {
+	public void setOutput(PrintWriter output)
+	{
 		this.output = output;
 		platform.setOutput(output);
-		for(Device sensor: sensors ) {
+		for (Device sensor : sensors)
 			sensor.setOutput(output);
-		}
 	}
-
-/*
- * Test methode
- */
-	public void test() {
-		platform.start();
-//		platform.println("P1.MOVEFW 50");
-//		platform.println("P1.ROTATERIGHT 45");
-//		platform.println("P1.MOVEFW 100");
-		Laser laser = (Laser) sensors.get(0);
-		laser.start();
-		laser.sendCommand("L1.SCAN");
+	
+	/**
+	 * Get a device instance by name.
+	 * @param name The name of the device.
+	 * @return Null if the device with the given name is not found.
+	 */
+	public Object getDeviceByName(String name)
+	{
+		for (Device dev : sensors)
+			if (dev.name.equals(name))
+				return dev;
+		if (platform.name.equals(name))
+			return platform;
+		else if (this.name.equals(name))
+			return this;
+		return null;
 	}
-
-
-
-    public Object getDeviceByName(String name)
-    {
-        for (Device dev : sensors)
-            if (dev.name.equals(name))
-                return dev;
-        if (platform.name.equals(name))
-            return platform;
-        else if (this.name.equals(name))
-            return this;
-        return null;
-    }
 }

@@ -23,7 +23,7 @@
  * Title:        The MObile RObot Simulation Environment
  * Description:
  * Copyright:    Copyright (c) 2001
- * Company:      Università di Bergamo
+ * Company:      Universit di Bergamo
  * @author Davide Brugali
  * @version 1.0
  */
@@ -31,12 +31,28 @@
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.SystemColor;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JPanel;
 
+
+
+
+
+
+
+
 @SuppressWarnings("serial")
-public class OccupancyMap extends JPanel {
+public class OccupancyMap 
+{
+	// The list of obstacles in the map.
+		private List<Obstacle> obstacles = new ArrayList<Obstacle>();
+		private Map<Point, PositionType> map = new HashMap<Point, PositionType>();
+
 	/*
 	 * The class OccupanceMap is responsible for containing the data that has been discovered by
 	 * the robot. It is also reponsible for drawing this data. Not a great example of cohesion.
@@ -44,113 +60,356 @@ public class OccupancyMap extends JPanel {
 	int cellDim = 10;
 	int width = 510;
 	int height = 460;
-	char grid[][] = new char[width/cellDim][height/cellDim];
+	
+	int cellDimNew = 1;
+	
+	// Low resolution grid.
+		private PositionType grid[][] = new PositionType[width / cellDim][height / cellDim];
+		// High resolution grid.
+		private PositionType gridNew[][] = new PositionType[width / cellDimNew][height / cellDimNew];
+	
 	private final static char UNKNOWN = 'n';
 	private final static char EMPTY = 'e';
 	private final static char OBSTACLE = 'o';
 
-	public OccupancyMap() {
-		this.setBackground(SystemColor.window);
-		for(int i=0; i < width/cellDim; i++)
-			for(int j=0; j < height/cellDim; j++)
-				grid[i][j] = UNKNOWN;
-
-		this.repaint();
+	public OccupancyMap() 
+	{
+		initGrids();
 	}
 
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		// --------------------------- draw map --------------------------------------
-		for(int i=0; i < width/cellDim; i++)
-			for(int j=0; j < height/cellDim; j++) {
-				if(grid[i][j] == UNKNOWN) {
-					g.setColor(Color.yellow);
-					g.fillRect(i*cellDim, j*cellDim, cellDim, cellDim);
-				}
-				else if(grid[i][j] == OBSTACLE) {
-					g.setColor(Color.blue);
-					g.fillRect(i*cellDim, j*cellDim, cellDim, cellDim);
-				}
-			}
-		// --------------------------- draw grid --------------------------------------
-		g.setColor(Color.lightGray);
-		for(int i=0; i <= width/cellDim; i++)
-			g.drawLine(i*cellDim, 0, i*cellDim, height);
-		for(int j=0; j <= height/cellDim; j++)
-			g.drawLine(0, j*cellDim, width, j*cellDim);
-	}
-
-	/*
+	/**
+	 * Method to check if there or still unknowns in the Grid.
 	 * 
 	 */
-	public void drawLaserScan(double position[], double measures[]) {
-		// Calculates x and y position using distance and angle
-		double rx = Math.round( position[0] + 20.0 * Math.cos(Math.toRadians(position[2])) );
-		double ry = Math.round( position[1] + 20.0 * Math.sin(Math.toRadians(position[2])) );
-		int   dir = (int) Math.round(position[2]);
-
+	public boolean isMapComplete() 
+	{
+		return getUnknownAdjacent() == null;
+	}
+	
+	/**
+	 * Get an x/y coordinate of a position with position type unknown, adjacent
+	 * to an empty point, relatively nearest to the given point
+	 * This is useful for knowing where to go next for the MRE
+	 * @param currentPoint the given Point
+	 * @return The unknown point adjacent to the empty point.
+	 */
+	public Point getNearestUnknownAdjacent(Position currentPoint)
+	{
+		Point nearestPoint = getUnknownAdjacent();
+		// No point 
+		if (nearestPoint == null)
+			return null;
 		
-		for(int i=0; i<360; i++) {
-			int d = i - dir;
-			while(d < 0)
-				d += 360;
-			while(d >= 360)
-				d -= 360;
-			
-			// calculates the x and y values for all angles and collisions
-			// When a collision is detected the measure is < 100
-			// When no collision is detected the measure is 100
-			double fx = Math.round( rx + measures[d] * Math.cos(Math.toRadians(i)) );
-			double fy = Math.round( ry + measures[d] * Math.sin(Math.toRadians(i)) );
+		// Checking the outside boundary is useless. Therefore, start off with x,y=1,1.
+		for (int x = 1; x < grid.length-1; x++)
+			for (int y = 1; y < grid[x].length - 1; y++)
+			{
+				// Controleren of een unknown ook een empty omzich heen heeft anders is die niet relevant.
+				// Omdat die dan binnen of buiten een type muur ligt.(Hier bevinden zich namelijk geen empty) 
+				if (isUnknownAdjacentToEmpty(x, y))
+						// Comparing the distance of this unknown point to 
+					if ((Math.sqrt((Math.pow((currentPoint.getX()-(x * cellDim)), 2)+(Math.pow((currentPoint.getY()-y * cellDim), 2)))))<(Math.sqrt((Math.pow((currentPoint.getX()-nearestPoint.getX()), 2)+(Math.pow((currentPoint.getY()-nearestPoint.getY()), 2))))))
+					nearestPoint = new Point(x, y);
+				
+			}
+		
 
-			if(measures[d] < 100)
-				// When collision is detected an obstacle is detected and value is true
-				drawLaserBeam(rx, ry, fx, fy, true);
-			else
-				drawLaserBeam(rx, ry, fx, fy, false);
+			return nearestPoint;
+	}
+	
+	/**
+	 * Get the position type. The x and y coordinates may be negative when
+	 * using relative coordinates.  
+	 * @param x
+	 * @param y
+	 * @return MapPosition.UNKNOWN if nothing known. Otherwise a MapPosition enum value.
+	 */
+	public PositionType getPositionType(int x, int y)
+	{
+		PositionType position = map.get(new Point(x, y));
+		if (position == null)
+			return PositionType.UNKNOWN;
+		return position;
+	}
+	
+	private PositionType getPositionType(int x, int y, int cellDim, PositionType[][] grid)
+	{
+		// Calculate the grid position from the x+y.
+		int gridX = (int) Math.ceil(x / cellDim);
+		int gridY = (int) Math.ceil(y / cellDim);
+		
+		// Prevent an array out of bounds exception.
+		if (gridX < 0 || gridX > grid.length || gridY < 0 || gridY > grid[gridX].length)
+		{
+			System.err.println("Attempted to get position outside field");
+			return PositionType.UNKNOWN;
 		}
-		this.repaint();
+		
+		return grid[gridX][gridY];
+	}
+	
+	public PositionType getPositionType(int x, int y, boolean fromGrid)
+	{
+		if (!fromGrid)
+			return getPositionType(x, y);
+		return getPositionType(x, y, cellDimNew, gridNew);
+	}
+	
+	/**
+	 * Get an x/y coordinate of a position with position type unknown, adjacent
+	 * to an empty point. This is useful for testing whether or not there is
+	 * anything left in the field to scan.
+	 * @return The unknown point adjacent to the empty point.
+	 */
+	public Point getUnknownAdjacent()
+	{
+		// Checking the outside boundary is useless. Therefore, start off with x,y=1,1.
+		for (int x = 1; x < grid.length-1; x++)
+			for (int y = 1; y < grid[x].length - 1; y++)
+			{
+				// Controleren of een unknown ook een empty omzich heen heeft anders is die niet relevant.
+				// Omdat die dan binnen of buiten een type muur ligt.(Hier bevinden zich namelijk geen empty) 
+					if (isUnknownAdjacentToEmpty(x, y))
+					
+						// Multiply with the cell dimension to get the real x/y
+						 return new Point(x * cellDim, y * cellDim);
+			}
+		
+		// No point 
+		return null;
+	}
+	
+	/**
+	 * Checking if an unknown is next to an empty PositionType
+	 * @param x the X of the point in the grid	
+	 * @param y the Y of the point in the grid
+	 * @return
+	 */
+	private boolean isUnknownAdjacentToEmpty(int x, int y)
+	{
+		return grid[x][y] == PositionType.UNKNOWN && 
+			(	
+				// Check if the unknown field has an empty field adjacent to it.
+				grid[x-1][y] == PositionType.EMPTY ||  
+				grid[x][y-1] == PositionType.EMPTY ||
+				grid[x-1][y-1] == PositionType.EMPTY ||
+				grid[x+1][y] == PositionType.EMPTY ||
+				grid[x][y+1] == PositionType.EMPTY ||
+				grid[x+1][y+1] == PositionType.EMPTY ||
+				grid[x-1][y+1] == PositionType.EMPTY ||
+				grid[x+1][y-1] == PositionType.EMPTY
+			);
+	}
+	
+	/**
+	 * Get the new grid
+	 * @return the new grid
+	 */
+	 public PositionType[][] getNewGrid() 
+	 { 
+		 return gridNew; 
+	 }
+	
+	/**
+	 * Clear the occupancy map.
+	 */
+	public void clear()
+	{
+		initGrids();
+		obstacles.clear();
+		map.clear();
+	}
+	
+	private void initGrids()
+	{
+		// Set all grid items' initial status to unknown.
+		initGrid(grid, height, width, cellDim);
+		// New grid
+		initGrid(gridNew, height, width, cellDimNew);
+	}
+	
+	private void initGrid(PositionType[][] grid, int height, int width, int cellDim)
+	{
+		for (int i = 0; i < width / cellDim; i++)
+			for (int j = 0; j < height / cellDim; j++)
+				grid[i][j] = PositionType.UNKNOWN;
+	}
+	
+	
+	/**
+	 * Get the array of obstacles in the map.
+	 * @return
+	 */
+	public Obstacle[] getObstacles()
+	{
+		Obstacle[] o = new Obstacle[obstacles.size()];
+		return obstacles.toArray(o);
 	}
 
-	private void drawLaserBeam(double rx, double ry, double x, double y, boolean obstacle) {
+	/**
+	 * Get the current grid.
+	 * @return
+	 */
+	public PositionType[][] getGrid()
+	{
+		return grid;
+	}
+	
+	/**
+	 * Update the contents of the occupancy map. This method updates the occupancy map
+	 * with MapPosition entries.
+	 * @param sm The data measured by the sensor.
+	 */
+	public void update(SensorMeasures sm)
+	{
+		Position position = sm.getPosition();
+		double[] measures = sm.getMeasures();
+		// The offset 
+		double rx = Math.round(position.getX() + 20.0 * Math.cos(position.getT()));
+		double ry = Math.round(position.getY() + 20.0 * Math.sin(position.getT()));
+		System.out.println("rx: " + rx);
+		System.out.println("ry: " + ry);
+		
+		int dir = (int) Math.round(Math.toDegrees(position.getT()));
+
+		// Shamelessly stolen from the original OccupancyMapView code.
+		for (int i = 0; i < 360; i++)
+		{
+			int d = i - dir;
+			// This is necessary in order to convert the measured positions to
+			// real x/y coordinates.
+			while (d < 0)
+				d += 360;
+			while (d >= 360)
+				d -= 360;
+			// The real coordinates in the map.
+			// XXX: This may lead to rounding errors.
+			double fx = Math.round(rx + measures[d] * Math.cos(Math.toRadians(i)));
+			double fy = Math.round(ry + measures[d] * Math.sin(Math.toRadians(i)));
+			
+			PositionType posType;
+			// TODO: Implement opaque as well. Currently impossible, because the source device is unknown.
+			// Maybe this should not be done here anyway.
+			// If the value of the measurement is less than 100, an obstacle of some type is found.
+			Device sensor = sm.getSource();
+			if (measures[d] < 100.0)
+			{
+				if (sensor instanceof Laser)
+					posType = PositionType.OBSTACLE;
+				else
+					posType = PositionType.OPAQUE;
+			}
+			else
+				// Otherwise, the position is empty.
+				posType = PositionType.EMPTY;
+			// Update the grid.
+			updateGrid(rx, ry, fx, fy, posType);
+			// XXX: To be obsoleted.
+			setPositionType((int) fx, (int) fy, posType);
+		}
+	}
+	
+	/**
+	 * Set the status of a position. The x and y coordinates may be negative when
+	 * using relative coordinates. 
+	 * @param x
+	 * @param y
+	 * @param type The new type
+	 */
+	public void setPositionType(int x, int y, PositionType type)
+	{
+		// When the given status is unknown, remove it from the map to save memory.
+		Point p = new Point(x, y);
+		if (type == PositionType.UNKNOWN)
+			map.remove(p);
+		else
+		{
+			// Otherwise, just set it.
+			map.put(p, type);
+//			System.out.println("Set " + x + "," + y + " to " + type);
+		}
+	}
+	
+	
+	/**
+	 * 
+	 * @param rx
+	 * @param ry
+	 * @param x
+	 * @param y
+	 * @param type
+	 */
+	private void updateGrid(double rx, double ry, double x, double y, PositionType type)
+	{
+		// 
+		updateGrid(rx, ry, x, y, type, cellDim, grid);
+		updateGrid(rx, ry, x, y, type, cellDimNew, gridNew);
+	}
+	
+	private void updateGrid(double rx, double ry, double x, double y, PositionType type, int cellDim, PositionType grid[][])
+	{
+		// ???
 		int rxi = (int) Math.ceil(rx / cellDim);
 		int ryj = (int) Math.ceil(ry / cellDim);
-		int  xi = (int) Math.ceil(x / cellDim);
-		int  yj = (int) Math.ceil(y / cellDim);
+		int xi = (int) Math.ceil(x / cellDim);
+		int yj = (int) Math.ceil(y / cellDim);
 
-		if(xi < 0 || yj < 0 || xi >= width/cellDim || yj >= height/cellDim )
+		// Prevent an array out of bounds exception.
+		if (xi < 0 || yj < 0 || xi >= width / cellDim || yj >= height / cellDim)
 			return;
 
-		// This fills the grid coordinate with the type of obstacle
-		// If no obstacle then the grid coordinate is empty
-		if(obstacle)
-			grid[xi][yj] = OBSTACLE;
-		else if(grid[xi][yj] != OBSTACLE)
-			grid[xi][yj] = EMPTY;
+		// Store the position type.
+		// This is quite a stupid workaround for some measurement bug, but for now it works.
+		// Without this check, measured/scanned positions may get overwritten.
+		if (grid[xi][yj] != PositionType.UNKNOWN && grid[xi][yj] != PositionType.EMPTY && type != PositionType.OBSTACLE)
+		{
+			System.err.println("Not overwriting grid[" + xi + "][" + yj + "] (" + grid[xi][yj] + ") with " + type);
+			return;
+		}
+		grid[xi][yj] = type;
+//		if (type != PositionType.UNKNOWN)
+//			System.out.println("Set grid " + xi + "/" + yj + " to " + type);
 
+		// ???
 		int xmin = Math.min(rxi, xi);
 		int xmax = Math.max(rxi, xi);
 		int ymin = Math.min(ryj, yj);
 		int ymax = Math.max(ryj, yj);
 
-		// ???????
-		if(rx == x)
-			for(int j=ymin; j<=ymax; j++) {
-				if(grid[xmin][j] != OBSTACLE)
-					grid[xmin][j] = EMPTY;
+		if (rx == x)
+			// XXX: Find out how this works.
+			for (int j = ymin; j <= ymax; j++)
+			{
+				// TODO: This needs to be fixed when OPAQUE is implemented.
+				if ((grid[xmin][j] != PositionType.OBSTACLE) && (grid[xmin][j] != PositionType.OPAQUE))
+					grid[xmin][j] = PositionType.EMPTY;			
 			}
-		else {
+		else
+		{
+			// XXX: Find out how this works.
 			double m = (y - ry) / (x - rx);
 			double q = y - m * x;
-			for(int i=xmin; i<=xmax; i++) {
-				int h = (int) Math.ceil((m * (i*cellDim) + q) / cellDim);
-				if(h >= ymin && h <= ymax) {
-					if(grid[i][h] != OBSTACLE)
-						grid[i][h] = EMPTY;
-//					if(grid[i+1][h] != OBSTACLE)
-//					grid[i+1][h] = EMPTY;
+			for (int i = xmin; i <= xmax; i++)
+			{
+				int h = (int) Math.ceil((m * (i * cellDim) + q) / cellDim);
+				if (h >= ymin && h <= ymax)
+				{
+					if ((grid[i][h] != PositionType.OBSTACLE) && (grid[i][h] != PositionType.OPAQUE))
+						grid[i][h] = PositionType.EMPTY;				
 				}
 			}
 		}
+	}
+	
+	
+	
+	
+	/**
+	 * Add an obstacle to the map.
+	 * @param obstacle The obstacle to add to the map.
+	 */
+	public void addObstacle(Obstacle obstacle)
+	{
+		obstacles.add(obstacle);
 	}
 }

@@ -32,11 +32,13 @@ import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.HeadlessException;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -46,6 +48,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.plaf.basic.BasicMenuBarUI;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 @SuppressWarnings("serial")
 public class SimulWindow extends JFrame {
@@ -80,7 +85,21 @@ public class SimulWindow extends JFrame {
 		menuFileOpenMap.setText("Open Map");
 		menuFileOpenMap.addActionListener(new ActionListener()  {
 			public void actionPerformed(ActionEvent e) {
-				menuFileOpenMap_actionPerformed(e);
+				try {
+					menuFileOpenMap_actionPerformed(e);
+				} catch (HeadlessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (ParserConfigurationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (SAXException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		// Menu File Exit
@@ -112,8 +131,12 @@ public class SimulWindow extends JFrame {
 	}
 
 	// --------------------------- Menu actions ----------------------------------
-	/** Menu File Open Map*/
-	void menuFileOpenMap_actionPerformed(ActionEvent e) {
+	/** Menu File Open Map
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
+	 * @throws HeadlessException */
+	void menuFileOpenMap_actionPerformed(ActionEvent e) throws HeadlessException, ParserConfigurationException, SAXException, IOException {
 		JFileChooser chooser = new JFileChooser(new File("c:"));
 		int returnVal = chooser.showOpenDialog(this);
 		if(returnVal == JFileChooser.APPROVE_OPTION){

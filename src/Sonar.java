@@ -23,6 +23,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+
+
 /**
  * Title: The MObile RObot Simulation Environment Description: The Sonar accepts
  * commands from the controller and executes them in steps. The most important
@@ -56,13 +58,11 @@ public class Sonar extends Device
 	public Sonar(String name, Robot robot, Position localPos, Environment environment)
 	{
 		super(name, robot, localPos, environment);
-		fgColor = new Color(0x3A82FF); // color of the sonar circle
-
-		//fillShape = false; // do not fil the sonar shape
+		fgColor = Color.green; // color of the sonar circle
+		fillShape = false; // do not fil the sonar shape
 		
 		// Defines the SHAPE of the sensor. default 10.
-		defineSonar(10);
-        fillShape = false;
+		defineSonar(10);		
 	}
 
 	private double read(boolean first)
@@ -83,10 +83,10 @@ public class Sonar extends Device
 			// This is really dirty: the laser uses direct access to
 			// environment's obstacles
 			Obstacle obstacle = environment.obstacles.get(i);
-			//double dist = pointToObstacle(obstacle.getPolygon(), centre, front, first);
-			//if (minDistance == -1.0 || (dist > 0 && dist < minDistance))
+			double dist = pointToObstacle(obstacle.getPolygon(), centre, front, first);
+			if (minDistance == -1.0 || (dist > 0 && dist < minDistance))
 			{
-			//	minDistance = dist;
+				minDistance = dist;
 				if (minDistance > -1 && first)
 				{
 					return minDistance;
@@ -185,50 +185,48 @@ public class Sonar extends Device
 			writeOut("DECLINED");
 	}
 	
-
-    @Override
-    /**
-     * Defines the next scan step.
-     *
-     */
-    public void nextStep()
-    {
-        if (running && numSteps > 0.0)
-        {
-            if (numSteps < 1.0)
-                localPos.rototras(0.0, 0.0, orientation * numSteps * rotStep);// orientation of sensors.
-            else
-                localPos.rototras(0.0, 0.0, orientation * rotStep);// orientation of sensor.
-
-            defineSonar((int) (range - (range * numSteps / 360))); // redefine sonar circle
-            environment.repaint(); // repaint sonar beam
-            numSteps -= 1.0; //number of steps ie scans decreased by one
-            running = true;
-
-        }
-        else if (running)
-        {
-            running = false;
-            defineSonar(10);
-            environment.repaint();
-            if (!detect && !scan)
-                writeOut("Sonar ARRIVED"); // done with scanning
-        }
-
-        if (scan) {
-            double distance = this.read(false);
-            if (distance > -1.0)
-                scanMeasures.add(new Measure(distance, localPos.getT())); // ??????????????
-
-        }
-    }
-
-    /**
+	@Override
+	/**
+	 * Defines the next scan step.
+	 * 
+	 */
+	public void nextStep()
+	{
+		if (running && numSteps > 0.0)
+		{
+			if (numSteps < 1.0)
+				localPos.rototras(0.0, 0.0, orientation * numSteps * rotStep);// orientation of sensors.
+			else
+				localPos.rototras(0.0, 0.0, orientation * rotStep);// orientation of sensor.
+			
+			defineSonar((int) (range - (range * numSteps / 360))); // redefine sonar circle
+			environment.repaint(); // repaint sonar beam
+			numSteps -= 1.0; //number of steps ie scans decreased by one
+			running = true;
+			
+		}
+		else if (running)
+		{
+			running = false;
+			defineSonar(10);
+			environment.repaint();
+			if (!detect && !scan)
+				writeOut("Sonar ARRIVED"); // done with scanning
+		}
+		
+		if (scan) {
+			double distance = this.read(false);
+			if (distance > -1.0)
+				scanMeasures.add(new Measure(distance, localPos.getT())); // ??????????????
+		
+		}
+	}
+	
+	/**
 	 * Defines all the polygons that make up the sonar circle shape
 	 * All points are added to this sonar object.
 	 */
 	private void defineSonar(int radius) {
-
 		this.resetShape(); // reset all polygons for this object
 		double x = localPos.getX() - 20;
 		double y = localPos.getY();
