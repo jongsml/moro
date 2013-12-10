@@ -130,7 +130,6 @@ public class Controller
 		{
 			for (String result : results)
 			{
-				System.out.println("works!!!!!!!!!!!!");
 				// Parse the measures.
 				SensorMeasures sm = parseMeasures(currentPosition, result);
 				// Update the map with the measured data.
@@ -348,7 +347,6 @@ public class Controller
 		
 		// Remove the SRC= from the source.
 		String sensorName = source.substring(4).trim();
-		System.out.println("DEVICE: " + sensorName);
 		return new SensorMeasures(position, (Device) getDeviceByName(sensorName), measures);
 	}
 	
