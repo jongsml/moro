@@ -175,7 +175,7 @@ public class Sonar extends Device
 		else if (command.equalsIgnoreCase("GETMEASURES"))
 		{
 			Measure measure = null;
-			String measures = "SCAN";
+			String measures = "SRC=S1";
 			for (int i = 0; i < scanMeasures.size(); i++)
 			{
 				measure = scanMeasures.get(i);
