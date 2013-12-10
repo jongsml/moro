@@ -219,7 +219,7 @@ public class Laser extends Device{
 		}
 		else if(command.equalsIgnoreCase("GETMEASURES")) {
 			Measure measure = null;
-			String measures = "SCAN";
+			String measures = "SRC=L1";
 			// Files the measures array with the individual measure
 			for(int i=0; i < scanMeasures.size(); i++) {
 				measure = scanMeasures.get(i);
