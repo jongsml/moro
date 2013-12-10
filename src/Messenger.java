@@ -1,17 +1,16 @@
 
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class Messenger {
+public class Messenger{
 
-	private List<MessageListener> listeners = new ArrayList<MessageListener>();
+	private List<MessageListener> listeners = new ArrayList<MessageListener>();;
 	private MessageListener listener;
 	private static Messenger instance = null;
 	
-	   protected Messenger() {
-	      // Exists only to defeat instantiation.
-	   }
+	   protected Messenger() {}
 	   public synchronized static Messenger getInstance() {
 	      if(instance == null) {
 	         instance = new Messenger();
@@ -19,33 +18,42 @@ public class Messenger {
 	      return instance;
 	   }
 
-        public void addLogListener(MessageListener listener) {
-		    listeners.add(listener);
+        public synchronized void addLogListener(MessageListener listener) {
+            listeners.add(listener);
 		}
-	   
-	   public void log(String message) {
-           System.out.println(message);
-		   for (MessageListener listener : listeners) {
-		       System.out.println("PIEP");
+
+
+
+	   public synchronized void log(String message) {
+
+		   for (MessageListener listener : getLogListeners()) {
+               if(listener!=null) {
+                  ((MessageListener)listener).messageAdded(message);
+               }
 		   }
 		}
-	   
-	   public boolean hasLogListener() {
-		   boolean listenerFound = false;
-		   int index = 0;
-		   
-		   MessageListener[] listeners = getLogListeners();
-		   while(!listenerFound && index < listeners.length) {
-		    // check if listeners are the same object.
-		    listenerFound = (listeners[index] == listener);
-		    // increase index on iteration.
-		    index++;
-		   }
-		   return listenerFound;
+
+       public boolean hasLogListener() {
+            return (getLogListeners().size() > 0);
+       }
+
+
+	   private List<MessageListener> getLogListeners() {
+		    return listeners;
 	   }
-	
-	   private MessageListener[] getLogListeners() {
-		
-		return null;
-	}
+
+
+    public static void main(String[] args){
+
+        Messenger messenger = Messenger.getInstance();
+
+                  messenger.addLogListener(new MessageListener() {
+                      @Override
+                      public void messageAdded(String message) {
+                          System.out.println("listener is triggers message is: ["+message+"]");
+                      }
+                  });
+
+        messenger.log("file event now :)");
+    }
 }
