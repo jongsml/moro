@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.view;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -26,6 +27,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JPanel;
+
+import nl.hanze.project.moro.devices.PositionType;
+import nl.hanze.project.moro.model.OccupancyMap;
 
 /**
  

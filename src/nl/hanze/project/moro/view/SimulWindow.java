@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.view;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -49,6 +50,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.plaf.basic.BasicMenuBarUI;
 import javax.xml.parsers.ParserConfigurationException;
+
+import nl.hanze.project.moro.devices.Environment;
 
 import org.xml.sax.SAXException;
 
@@ -110,12 +113,7 @@ public class SimulWindow extends JFrame {
 			}
 		});
 		
-		aboutUs.setText("About us");
-		aboutUs.addActionListener(new ActionListener()  {
-			public void actionPerformed(ActionEvent e) {
-				new DisplayAboutUs();
-			}
-		});
+		
 		// Adds the menu components
 		menuFile.add(menuFileOpenMap);
 		menuFile.add(menuFileExit);

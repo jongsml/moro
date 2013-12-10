@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.devices;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -38,14 +39,30 @@ import java.util.ArrayList;
 
 public abstract class Device implements Runnable
 {
-	String name;                  // the name of this device
-	Environment environment;          // a reference to the environment
-	Polygon shape = new Polygon();        // the device's shape in local coords
+	private String name;                  // the name of this device
+	private Environment environment;          // a reference to the environment
+	private Robot robot;
+	private Polygon shape = new Polygon();        // the device's shape in local coords
     Boolean fillShape = true;          // filled or not
 
 
-	// a reference to the robot
-	Robot robot;
+    
+	public Environment getEnvironment() {
+		return environment;
+	}
+
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) 
+	{
+		this.name = name;
+	}
 	// the robot current position
 	Position robotPos = new Position();
 	// origin of the device reference frame with regards to the robot frame
@@ -64,11 +81,12 @@ public abstract class Device implements Runnable
 	protected PrintWriter output = null;
 
 	// the constructor
-	public Device(String name, Robot robot, Position local, Environment environment) {
+	public Device(String name, Robot robot, Position position, Environment environment) 
+	{
 		this.name = name;
-		this.robot = robot;
+		this.setRobot(robot);
 		robot.readPosition(this.robotPos);
-		this.localPos = local;
+		this.localPos = position;
 		this.environment = environment;
 		// This will cause the device run() to be started in a separate thread.
 		thread = new Thread(this);
@@ -76,26 +94,26 @@ public abstract class Device implements Runnable
 
 	// this method is invoked when the geometric shape of the device is defined
 	public void addPoint(int x, int y) {
-		shape.addPoint(x, y);
+		getShape().addPoint(x, y);
 	}
 
 
     protected void resetShape()
     {
-        shape.reset();
+        getShape().reset();
     }
 
     public void paint(Graphics g)
     {
 
         // reads the robot's current position
-        robot.readPosition(robotPos);
+        getRobot().readPosition(robotPos);
         // draws the shape
         Polygon globalShape = new Polygon();
         Point2D point = new Point2D.Double();
-        for (int i = 0; i < shape.npoints; i++)
+        for (int i = 0; i < getShape().npoints; i++)
         {
-            point.setLocation(shape.xpoints[i], shape.ypoints[i]);
+            point.setLocation(getShape().xpoints[i], getShape().ypoints[i]);
             // calculates the coordinates of the point according to the local position
             localPos.rototras(point);
             // calculates the coordinates of the point according to the robot position
@@ -198,6 +216,22 @@ public abstract class Device implements Runnable
 
 	public void setOutput(PrintWriter output) {
 		this.output = output;
+	}
+
+	public Robot getRobot() {
+		return robot;
+	}
+
+	public void setRobot(Robot robot) {
+		this.robot = robot;
+	}
+
+	public Polygon getShape() {
+		return shape;
+	}
+
+	public void setShape(Polygon shape) {
+		this.shape = shape;
 	}
 
 }

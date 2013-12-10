@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.model;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -24,9 +25,8 @@ import java.awt.Polygon;
 
 /**
  * Title: The MObile RObot Project Description: The Obstacle represents an
- * obstacle on the map. Copyright: Copyright (c) 2001 Company: Universidi
- * Bergamo
- * 
+ * obstacle on the map. Copyright: Copyright (c) 2001 Company: Universidi Bergamo
+ 
  * @author Davide Brugali
  * @version 1.0
  */

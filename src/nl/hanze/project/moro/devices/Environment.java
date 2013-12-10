@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.devices;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -23,12 +24,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +36,10 @@ import javax.swing.JPanel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import nl.hanze.project.moro.model.Obstacle;
+import nl.hanze.project.moro.model.OccupancyMap;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -46,18 +49,34 @@ import org.xml.sax.SAXException;
 @SuppressWarnings("serial")
 public class Environment extends JPanel 
 {
-	ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();
-	Robot robot = null;
+	private ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();
+	private Robot robot = null;
 	
 	OccupancyMap occupancyMap = new OccupancyMap();
 
 
 	/**Construct the application*/
-	public Environment() {
+	public Environment() 
+	{
 		// defines the starting position of the robot (name, x, y, direction, environment)
 		robot = new Robot("R1", 90, 200, 270, this);
 	}
 	
+	
+	
+	public ArrayList<Obstacle> getObstacles() {
+		return obstacles;
+	}
+
+
+
+	public void setObstacles(ArrayList<Obstacle> obstacles) 
+	{
+		this.obstacles = obstacles;
+	}
+
+
+
 	/**
 	 * Load a map from a file.
 	 * @param mapFile
@@ -124,6 +143,7 @@ public class Environment extends JPanel
 			xy[i] = new int[] { xPoints.get(i), yPoints.get(i) };
 
 		// Return a new obstacle.
+		System.out.println("name: " + name + "xy: " + xy + " equals: "  + opaque.equalsIgnoreCase("true"));
 		return new Obstacle(name, xy, opaque.equalsIgnoreCase("true"));
 	}
 	

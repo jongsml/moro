@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.devices;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -38,7 +39,8 @@ public class Position {
 	/*
 	 * Set default position
 	 */
-	public Position() {
+	public Position() 
+	{
 		set(0.0, 0.0, 0.0);
 	}
 
@@ -49,10 +51,8 @@ public class Position {
 		set(x, y, t);
 	}
 
-	/*
-	 * ?????
-	 */
-	public void rototras(double da, double db, double dt) {
+	public void rototras(double da, double db, double dt) 
+	{
 		this.x += da * Math.cos(this.t) - db * Math.sin(this.t);
 		this.y += da * Math.sin(this.t) + db * Math.cos(this.t);
 		this.t += Math.toRadians(dt);

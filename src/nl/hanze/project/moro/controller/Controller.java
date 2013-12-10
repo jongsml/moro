@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.controller;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -43,6 +44,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nl.hanze.project.moro.SensorMeasures;
+import nl.hanze.project.moro.devices.Device;
+import nl.hanze.project.moro.devices.Position;
+import nl.hanze.project.moro.devices.PositionType;
+import nl.hanze.project.moro.devices.Robot;
+import nl.hanze.project.moro.model.OccupancyMap;
+
 
 
 /**
@@ -55,7 +63,7 @@ import java.util.StringTokenizer;
  */
 public class Controller
 {
-	Robot robot = null;
+	private Robot robot = null;
 	private OccupancyMap map = new OccupancyMap();
 	// The objects listening to actions of this model.
 	private List<ActionListener> actionlisteners;
@@ -101,7 +109,7 @@ public class Controller
 	public boolean executeCommand(String command) 
 	{
 		// Check if a collision will occur.
-		if (willCollide(command, currentPosition, robot.platform.shape))
+		if (willCollide(command, currentPosition, robot.getPlatform().getShape()))
 			return false;
 		
 		// Send the command to the robot.
@@ -140,12 +148,10 @@ public class Controller
 		}
 		else
 			System.out.println("Heading " + Math.round(Math.toDegrees(currentPosition.getT())));
-		
 		// The command has been executed.
 		return true;
 	}
 		
-	
 	
 	public Position getCurrentPosition()
 	{

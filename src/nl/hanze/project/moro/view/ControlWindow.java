@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.view;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -30,6 +31,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+
+import nl.hanze.project.moro.controller.Controller;
+import nl.hanze.project.moro.pathfinding.MoveAI;
+import nl.hanze.project.moro.pathfinding.MovingAlgorithm;
 
 /*
  * Title:        The MObile RObot Simulation Environment

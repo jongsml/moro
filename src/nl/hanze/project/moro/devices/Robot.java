@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.devices;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -21,6 +22,8 @@ import java.awt.Graphics;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
+import nl.hanze.project.moro.devices.Sonar;
+
 
 
 /**
@@ -34,7 +37,7 @@ public class Robot
 {
 	String name;
 	private Position position;
-	Platform platform;
+	private Platform platform;
 	private ArrayList<Device> sensors = new ArrayList<Device>();
 	protected PrintWriter output = null;
 
@@ -42,10 +45,9 @@ public class Robot
 	{
 		this.name = name;
 		position = new Position(x, y, Math.toRadians(t));
-		platform = new Platform("P1", this, environment);
+		setPlatform(new Platform("P1", this, environment));
 		sensors.add(new Laser("L1", this, new Position(20.0, 0.0, 0.0), environment));
 		sensors.add(new Sonar("S1", this, new Position(20.0, 0.0, 0.0), environment));
-
 	}
 
 	void readPosition(Position position)
@@ -66,14 +68,14 @@ public class Robot
 
 	public void paint(Graphics g)
 	{
-		platform.paint(g);
+		getPlatform().paint(g);
 		for (Device sensor : sensors)
 			sensor.paint(g);
 	}
 
 	public void start()
 	{
-		platform.start();
+		getPlatform().start();
 		for (Device sensor : sensors)
 			sensor.start();
 	}
@@ -101,7 +103,7 @@ public class Robot
 		}
 		else if (isPlatformCommand(command))
 		{
-			platform.sendCommand(command);
+			getPlatform().sendCommand(command);
 			numDelegates = 1;
 		}
 		else if (isSensorCommand(command))
@@ -163,7 +165,7 @@ public class Robot
 	public void setOutput(PrintWriter output)
 	{
 		this.output = output;
-		platform.setOutput(output);
+		getPlatform().setOutput(output);
 		for (Device sensor : sensors)
 			sensor.setOutput(output);
 	}
@@ -176,12 +178,20 @@ public class Robot
 	public Object getDeviceByName(String name)
 	{
 		for (Device dev : sensors)
-			if (dev.name.equals(name))
+			if (dev.getName().equals(name))
 				return dev;
-		if (platform.name.equals(name))
-			return platform;
+		if (getPlatform().getName().equals(name))
+			return getPlatform();
 		else if (this.name.equals(name))
 			return this;
 		return null;
+	}
+
+	public Platform getPlatform() {
+		return platform;
+	}
+
+	public void setPlatform(Platform platform) {
+		this.platform = platform;
 	}
 }

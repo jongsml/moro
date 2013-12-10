@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.devices;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -35,6 +36,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import nl.hanze.project.moro.model.Obstacle;
+
 public class Laser extends Device{
 		
 	int orientation = 1;      // 1: clockwise  -1: otherwise
@@ -71,7 +74,7 @@ public class Laser extends Device{
 		Point2D front = new Point2D.Double(localPos.getX() + range * Math.cos(localPos.getT()),
 				localPos.getY() + range * Math.sin(localPos.getT()));
 		// reads the robot's position
-		robot.readPosition(robotPos);
+		getRobot().readPosition(robotPos);
 		// center's coordinates according to the robot position
 		robotPos.rototras(centre);
 		// front's coordinates according to the robot position
@@ -82,9 +85,9 @@ public class Laser extends Device{
 		double minDistance = -1.0;
 		
 		// Checks if the laser has a collision with any of the obstacles
-		for(int i=0; i < environment.obstacles.size(); i++) {
+		for(int i=0; i < getEnvironment().getObstacles().size(); i++) {
 			// This is really dirty: the laser uses direct access to environment's obstacles
-			Obstacle obstacle = (Obstacle) environment.obstacles.get(i);
+			Obstacle obstacle = (Obstacle) getEnvironment().getObstacles().get(i);
 			
 			// Checks if obstacle is a Wall
 			if(obstacle.isOpaque())
@@ -219,7 +222,7 @@ public class Laser extends Device{
 		}
 		else if(command.equalsIgnoreCase("GETMEASURES")) {
 			Measure measure = null;
-			String measures = "SCAN";
+			String measures = "SCR=L1";
 			// Files the measures array with the individual measure
 			for(int i=0; i < scanMeasures.size(); i++) {
 				measure = scanMeasures.get(i);
@@ -265,7 +268,7 @@ public class Laser extends Device{
 				localPos.rototras(0.0, 0.0, orientation*numSteps*rotStep);
 			else
 				localPos.rototras(0.0, 0.0, orientation*rotStep);
-			environment.repaint();
+			getEnvironment().repaint();
 			numSteps-=1.0;
 			running = true;
 		}

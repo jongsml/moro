@@ -1,3 +1,7 @@
+package nl.hanze.project.moro;
+import nl.hanze.project.moro.devices.Device;
+import nl.hanze.project.moro.devices.Position;
+
 
 public class SensorMeasures
 {

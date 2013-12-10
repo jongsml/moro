@@ -1,9 +1,15 @@
+package nl.hanze.project.moro.pathfinding;
 
 
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+
+import nl.hanze.project.moro.controller.Controller;
+import nl.hanze.project.moro.devices.Position;
+import nl.hanze.project.moro.devices.PositionType;
+import nl.hanze.project.moro.model.OccupancyMap;
 
 public class MoveAI implements MovingAlgorithm, Runnable
 {
@@ -31,8 +37,6 @@ public class MoveAI implements MovingAlgorithm, Runnable
 	
 	private boolean executeControllerCommand(String command)
 	{
-		final BlockingQueue<String> commandQueue = new ArrayBlockingQueue<String>(10);
-		commandQueue.add(command);
 		return controller.executeCommand(command);
 	}
 
@@ -40,6 +44,7 @@ public class MoveAI implements MovingAlgorithm, Runnable
 	 * Execute a scan.
 	 * @return
 	 */
+	
 	private boolean scan()
 	{
 		return executeControllerCommand("SCAN");
@@ -156,7 +161,6 @@ public class MoveAI implements MovingAlgorithm, Runnable
 		Position currentPoint = startPoint;
 		boolean nearStartPoint = false;
 		int totalMoves = 0;
-		// TODO: !controller.getMap().isMapComplete() should be removed.
 		while (!nearStartPoint && !controller.getMap().isMapComplete())
 		{
 			// GO RIGHT if possible
@@ -254,7 +258,7 @@ public class MoveAI implements MovingAlgorithm, Runnable
 					throw new RuntimeException("Unable to drive to last position");
 			}
 			
-			System.out.println("" + currentPoint.getX() + " " + currentPoint.getY() + " " + getPosition().getX() + " " + getPosition().getY());
+		//	System.out.println("" + currentPoint.getX() + " " + currentPoint.getY() + " " + getPosition().getX() + " " + getPosition().getY());
 			// Always refresh 
 			currentPoint = getPosition();
 			// Check if we're close to the start point.
@@ -289,64 +293,10 @@ public class MoveAI implements MovingAlgorithm, Runnable
 			{
 				//move backward	
 			}
-			// Fake algorithm done.
 			algorithmDone = true;
-			//geeft de dichtsbijzijnde unknown t.o.v. de currentpositionl
-			//controller.getMap().getNearestUnknownAdjacent(getPosition());
-			//geeft het routepunt het dichtste bij deze unknown
-			//getNearestRoutePoint(route);
+	
 		}
 	}
-	
-	/**
-	 * Drive the platform from the given source to the given destination
-	 * @param source
-	 * @param destination
-	 * @return True on success and false if something failed while driving to the destination.
-	 */
-	/*
-	private boolean turnTo(Position source, Position destination)
-	{
-		double sourceX = source.getX();
-		double sourceY = source.getY();
-		double sourceT = source.getT();
-		double destX = destination.getX();
-		double destY = destination.getY();
-		double heading = 0;
-			
-		if ((Math.abs(sourceY-destY)<2) && (sourceX < destX)) {
-			heading = 0;
-		}
-		if ((Math.abs(sourceY-destY)<2) && (sourceX > destX)) {
-			heading = 180;
-		}
-		if ((Math.abs(sourceX-destX)<2) && (sourceY < destY)) {
-			heading = 90;
-		}
-		if ((Math.abs(sourceX-destX)<2) && (sourceY < destY)) {
-			heading = 270;
-		}
-			
-		if ((Math.toRadians(heading - sourceT) < 0)) {
-				rotateLeft((int) Math.toDegrees((heading - sourceT)));
-		}
-		if ((Math.toRadians(heading - sourceT) > 0)) {
-				rotateRight((int) Math.toDegrees((heading - sourceT)));
-		}
-		
-		if ((Math.abs(sourceY-destY)<2)) {
-			for (int i = 0; i < Math.abs(sourceX - destX); i++)
-				moveForward(i);
-		}
-		
-		if ((Math.abs(sourceX-destX)<2)) {
-			for (int i = 0; i < Math.abs(sourceY - destY); i++)
-				moveForward(i);
-		}
-		return true;
-	}
-	*/
-	
 	private int getNearestRoutePoint(LinkedList<Position> route)
 	{
 		Position nearestRoutePoint = getPosition();
@@ -366,54 +316,7 @@ public class MoveAI implements MovingAlgorithm, Runnable
 		return index;		
 	}
 	
-	/**
-	 * Drive the platform from the given source to the given destination
-	 * @param source
-	 * @param destination
-	 * @return True on success and false if something failed while driving to the destination.
-	 */
-	/*
-	private boolean turnTo(Position source, Position destination)
-	{
-		double sourceX = source.getX();
-		double sourceY = source.getY();
-		double sourceT = source.getT();
-		double destX = destination.getX();
-		double destY = destination.getY();
-		double heading = 0;
-			
-		if ((Math.abs(sourceY-destY)<2) && (sourceX < destX)) {
-			heading = 0;
-		}
-		if ((Math.abs(sourceY-destY)<2) && (sourceX > destX)) {
-			heading = 180;
-		}
-		if ((Math.abs(sourceX-destX)<2) && (sourceY < destY)) {
-			heading = 90;
-		}
-		if ((Math.abs(sourceX-destX)<2) && (sourceY < destY)) {
-			heading = 270;
-		}
-			
-		if ((Math.toRadians(heading - sourceT) < 0)) {
-				rotateLeft((int) Math.toDegrees((heading - sourceT)));
-		}
-		if ((Math.toRadians(heading - sourceT) > 0)) {
-				rotateRight((int) Math.toDegrees((heading - sourceT)));
-		}
-		
-		if ((Math.abs(sourceY-destY)<2)) {
-			for (int i = 0; i < Math.abs(sourceX - destX); i++)
-				moveForward(i);
-		}
-		
-		if ((Math.abs(sourceX-destX)<2)) {
-			for (int i = 0; i < Math.abs(sourceY - destY); i++)
-				moveForward(i);
-		}
-		return true;
-	}
-	*/
+	
 	
 	/**
 	 * Drive the platform from the given source to the given destination
@@ -445,9 +348,7 @@ public class MoveAI implements MovingAlgorithm, Runnable
 	private int wallIsNear(Position point, double degrees, int distance)
 	{
 		int gridSize1=0;
-		int gridSize2=0;
-		
-		System.out.println("degrees" + degrees);
+		int gridSize2=0;		
 		if (degrees == 0.0) {
 			gridSize1 = 22;//voorkant 1
 			gridSize2 = 22;//voorkant 2
@@ -460,10 +361,6 @@ public class MoveAI implements MovingAlgorithm, Runnable
 			gridSize1 = 27;//zijkant kort
 			gridSize2 = 26;//zijkant lang
 		}
-				
-		System.err.println("Checking from " + point.getX() + "," + point.getY() + 
-			" (heading " + Math.toDegrees(point.getT()) + "), new angle " + degrees + 
-			", max distance " + distance);
 		OccupancyMap map = controller.getMap();
 		double newt = point.getT() + Math.toRadians(degrees);
 		for (int z = 0; z <= distance+1; z++)

@@ -1,3 +1,4 @@
+package nl.hanze.project.moro.model;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -29,49 +30,40 @@
  */
 
 
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.SystemColor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JPanel;
 
-
-
-
-
+import nl.hanze.project.moro.SensorMeasures;
+import nl.hanze.project.moro.devices.Device;
+import nl.hanze.project.moro.devices.Laser;
+import nl.hanze.project.moro.devices.Position;
+import nl.hanze.project.moro.devices.PositionType;
 
 
 
 @SuppressWarnings("serial")
 public class OccupancyMap 
 {
-	// The list of obstacles in the map.
 		private List<Obstacle> obstacles = new ArrayList<Obstacle>();
 		private Map<Point, PositionType> map = new HashMap<Point, PositionType>();
 
-	/*
-	 * The class OccupanceMap is responsible for containing the data that has been discovered by
-	 * the robot. It is also reponsible for drawing this data. Not a great example of cohesion.
-	 */
 	int cellDim = 10;
 	int width = 510;
 	int height = 460;
 	
 	int cellDimNew = 1;
 	
-	// Low resolution grid.
-		private PositionType grid[][] = new PositionType[width / cellDim][height / cellDim];
-		// High resolution grid.
-		private PositionType gridNew[][] = new PositionType[width / cellDimNew][height / cellDimNew];
+	private PositionType grid[][] = new PositionType[width / cellDim][height / cellDim];
+	private PositionType gridNew[][] = new PositionType[width / cellDimNew][height / cellDimNew];
 	
+	/*
 	private final static char UNKNOWN = 'n';
 	private final static char EMPTY = 'e';
 	private final static char OBSTACLE = 'o';
-
+*/
 	public OccupancyMap() 
 	{
 		initGrids();
@@ -107,8 +99,8 @@ public class OccupancyMap
 				// Controleren of een unknown ook een empty omzich heen heeft anders is die niet relevant.
 				// Omdat die dan binnen of buiten een type muur ligt.(Hier bevinden zich namelijk geen empty) 
 				if (isUnknownAdjacentToEmpty(x, y))
-						// Comparing the distance of this unknown point to 
-					if ((Math.sqrt((Math.pow((currentPoint.getX()-(x * cellDim)), 2)+(Math.pow((currentPoint.getY()-y * cellDim), 2)))))<(Math.sqrt((Math.pow((currentPoint.getX()-nearestPoint.getX()), 2)+(Math.pow((currentPoint.getY()-nearestPoint.getY()), 2))))))
+				// Comparing the distance of this unknown point to 
+				if ((Math.sqrt((Math.pow((currentPoint.getX()-(x * cellDim)), 2)+(Math.pow((currentPoint.getY()-y * cellDim), 2)))))<(Math.sqrt((Math.pow((currentPoint.getX()-nearestPoint.getX()), 2)+(Math.pow((currentPoint.getY()-nearestPoint.getY()), 2))))))
 					nearestPoint = new Point(x, y);
 				
 			}

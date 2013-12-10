@@ -1,3 +1,5 @@
+package nl.hanze.project.moro.devices;
+
 
 
 /*
@@ -19,7 +21,6 @@
  * 02111-1307  USA
  */
 
-// package moro;
 
 /**
  * Title:        The MObile RObot Simulation Environment
@@ -40,6 +41,7 @@ public class Platform extends Device
 
 	public Platform(String name, Robot robot, Environment environment)
 	{
+		
 		super(name, robot, new Position(0.0, 0.0, 0.0), environment);
 		this.addPoint(20, 20);
 		this.addPoint(30, 10);
@@ -98,9 +100,9 @@ public class Platform extends Device
 			else
 				robotPos.rototras(0.0, 0.0, orientation * rotStep);
 			// updates the robot's position
-			robot.writePosition(robotPos);
+			getRobot().writePosition(robotPos);
 			// redraws the environment
-			environment.repaint();
+			getEnvironment().repaint();
 			numRotSteps -= 1.0;
 		}
 		else if (numMoveSteps > 0.0)
@@ -110,9 +112,9 @@ public class Platform extends Device
 			else
 				robotPos.rototras(moveStep * orientation, 0.0, 0.0);
 			// updates the robot's position
-			robot.writePosition(robotPos);
+			getRobot().writePosition(robotPos);
 			// redraws the environment
-			environment.repaint();
+			getEnvironment().repaint();
 			numMoveSteps -= 1.0;
 		}
 		else
