@@ -33,7 +33,7 @@ public class Messenger{
 		   }
 		}
 
-       public boolean hasLogListener() {
+       public synchronized boolean hasLogListeners() {
             return (getLogListeners().size() > 0);
        }
 
@@ -54,6 +54,6 @@ public class Messenger{
                       }
                   });
 
-        messenger.log("file event now :)");
+        messenger.log("fire event now :)");
     }
 }
