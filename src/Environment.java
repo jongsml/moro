@@ -23,20 +23,18 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import importer.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -85,81 +83,39 @@ public class Environment extends JPanel
 		return rv;
 	}
 
-	/**
-	 * Get an obstacle object from an XML node.
-	 * @param obstacleNode
-	 * @return The obstacle with x and y points.
-	 */
-	private Obstacle getObstacleFromNode(Node obstacleNode)
-	{
-		// Get the children of the obstacle node. The obstacle node contains point nodes.
-		NodeList children = obstacleNode.getChildNodes();
-		// Get the name and opaqueness
-		NamedNodeMap obstacleAttributes = obstacleNode.getAttributes();
-		String name = obstacleAttributes.getNamedItem("NAME").getNodeValue();
-		String opaque = obstacleAttributes.getNamedItem("OPAQUE").getNodeValue();
-		
-		// Lists to store x and y points in.
-		List<Integer> xPoints = new ArrayList<Integer>();
-		List<Integer> yPoints = new ArrayList<Integer>();
-		
-		// Walk through the list of points in this obstacle.
-		for (int i = 0; i < children.getLength(); i++)
-		{
-			Node nodeChild = children.item(i);
-			if (nodeChild.getNodeName().equals("POINT"))
-			{
-				// The X and Y are stored in the attributes of the POINT node.
-				NamedNodeMap pointChildren = nodeChild.getAttributes();
-				int x = Integer.parseInt(pointChildren.getNamedItem("X").getNodeValue());
-				int y = Integer.parseInt(pointChildren.getNamedItem("Y").getNodeValue());
-				xPoints.add(x);
-				yPoints.add(y);
-			}
-		}
-		
-		// Convert the retrieved points to a 2-dimensional array.
-		int[][] xy = new int[xPoints.size()][2];
-		for (int i = 0; i < xPoints.size(); i++)
-			xy[i] = new int[] { xPoints.get(i), yPoints.get(i) };
 
-		// Return a new obstacle.
-		return new Obstacle(name, xy, opaque.equalsIgnoreCase("true"));
-	}
 	
 	/**
 	 * Load a map from an input stream.
 	 * @param input
-	 * @return
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
 	 */
 	private boolean loadMap(InputStream input) throws ParserConfigurationException, SAXException, IOException
 	{
-		// removes all the obstacles already loaded
-		obstacles.clear();
-		occupancyMap.clear();
-		
-		Document doc = null;
-		// Create a new document builder.
-		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		doc = docBuilder.parse(input);
-		
-		// Get all nodes with the OBSTACLE tag name.
-		NodeList obstacleNodes = doc.getElementsByTagName("OBSTACLE");
-		for (int i = 0; i < obstacleNodes.getLength(); i++)
-		{
-			Node obstacleNode = obstacleNodes.item(i);
-			Obstacle obstacle = getObstacleFromNode(obstacleNode);
-			// Add it to the (soon to be obsoleted) list of obstacles.
-			obstacles.add(obstacle);
-			// And the occupancy map.
-			occupancyMap.addObstacle(obstacle);
-		}
-		
+
+        try{
+            MapLoader loader = new MapLoader(input);
+
+            System.out.println(loader.getMap().toString());
+
+            for(importer.Obstacle obstacle : loader.getObstacle()){
+                System.out.println(obstacle.toString());
+                occupancyMap.addObstacle(obstacle);
+                obstacles.add(obstacle);
+            }
+        }catch(JAXBException | IOException e){
+            e.printStackTrace();
+        }
 		return true;
 	}
+
+    private void loadMap(String path){
+
+    }
+
+
 
 	/*
 	 * 
@@ -221,4 +177,7 @@ public class Environment extends JPanel
 		xml += "</MAP>\n\n";
 		return xml;
 	}
+
+
+
 }

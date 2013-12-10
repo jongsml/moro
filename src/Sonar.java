@@ -17,6 +17,8 @@
  * 02111-1307  USA
  */
 
+import importer.Obstacle;
+
 import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.geom.Line2D;

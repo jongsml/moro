@@ -29,6 +29,8 @@
  */
 
 
+import importer.Obstacle;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -74,6 +76,7 @@ public class OccupancyMap
 
 	public OccupancyMap() 
 	{
+        obstacles = new ArrayList<Obstacle>();
 		initGrids();
 	}
 
@@ -264,9 +267,11 @@ public class OccupancyMap
 	{
 		Position position = sm.getPosition();
 		double[] measures = sm.getMeasures();
-		// The offset 
+		// The offset
+
 		double rx = Math.round(position.getX() + 20.0 * Math.cos(position.getT()));
 		double ry = Math.round(position.getY() + 20.0 * Math.sin(position.getT()));
+
 		System.out.println("rx: " + rx);
 		System.out.println("ry: " + ry);
 		

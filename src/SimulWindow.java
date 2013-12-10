@@ -81,8 +81,8 @@ public class SimulWindow extends JFrame {
 		// --------------------------- Menu ----------------------------------------
 		// Menu File
 		menuFile.setText("File");
-		// Menu File Open Map
-		menuFileOpenMap.setText("Open Map");
+		// Menu File Open importer.Map
+		menuFileOpenMap.setText("Open importer.Map");
 		menuFileOpenMap.addActionListener(new ActionListener()  {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -131,19 +131,19 @@ public class SimulWindow extends JFrame {
 	}
 
 	// --------------------------- Menu actions ----------------------------------
-	/** Menu File Open Map
+	/** Menu File Open importer.Map
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 * @throws HeadlessException */
 	void menuFileOpenMap_actionPerformed(ActionEvent e) throws HeadlessException, ParserConfigurationException, SAXException, IOException {
-		JFileChooser chooser = new JFileChooser(new File("c:"));
+		JFileChooser chooser = new JFileChooser(new File("./xml"));
 		int returnVal = chooser.showOpenDialog(this);
 		if(returnVal == JFileChooser.APPROVE_OPTION){
 			if(environment.loadMap(chooser.getSelectedFile()))
 				environment.repaint();
 			else
-				JOptionPane.showMessageDialog(null, "This is not a valid Map file!");
+				JOptionPane.showMessageDialog(null, "This is not a valid importer.Map file!");
 		}
 	}
 

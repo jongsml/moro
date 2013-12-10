@@ -29,6 +29,8 @@
  * @version 1.0
  */
 
+import importer.Obstacle;
+
 import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.geom.Line2D;
