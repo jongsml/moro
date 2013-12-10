@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Messenger{
 
-	private List<MessageListener> listeners = new ArrayList<MessageListener>();;
+	private List<MessageListener> listeners = new ArrayList<MessageListener>();
 	private MessageListener listener;
 	private static Messenger instance = null;
 	
@@ -33,8 +33,19 @@ public class Messenger{
 		   }
 		}
 
+       public synchronized int size(){
+           int count = 0;
+
+           for(MessageListener listener : getLogListeners()){
+               if(listener instanceof MessageListener){
+                   count++;
+               }
+           }
+           return count;
+       }
+
        public synchronized boolean hasLogListeners() {
-            return (getLogListeners().size() > 0);
+            return (size() > 0);
        }
 
 
