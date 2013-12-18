@@ -36,6 +36,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import nl.hanze.project.moro.geom.Measure;
 import nl.hanze.project.moro.model.Obstacle;
 
 public class Laser extends Device{
@@ -210,29 +211,6 @@ public class Laser extends Device{
 		if(distance > -1.0) {
 			// adds the distance and angle in the scanMeasures array
 			scanMeasures.add(new Measure(distance, localPos.getT()));   
-		}
-	}
-
-	// Innerclass Measure represents measurements from the Laser
-	class Measure {
-		public double distance = 0;
-		public double direction = 0.0;
-		Measure(double dist, double dir) {
-			distance = dist;
-			direction = dir;
-			while(direction >= 2.0*Math.PI)
-				direction -= 2.0*Math.PI;
-			while(direction < 0.0)
-				direction += 2.0*Math.PI;
-		}
-		
-		public void set(double dist, double dir) {
-			distance = dist;
-			direction = dir;
-			while(direction >= 2.0*Math.PI)
-				direction -= 2.0*Math.PI;
-			while(direction < 0.0)
-				direction += 2.0*Math.PI;
 		}
 	}
 }

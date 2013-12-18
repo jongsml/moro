@@ -24,6 +24,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import nl.hanze.project.moro.geom.Measure;
 import nl.hanze.project.moro.model.Obstacle;
 
 
@@ -215,32 +216,5 @@ public class Sonar extends Device
 			double t = i / 360.0;
 			this.addPoint((int) (x + radius * Math.cos( t * 2 * Math.PI)), (int) (y + radius * Math.sin( t * 2 * Math.PI)));
 		}
-	}
-	
-	// Innerclass Measure represents measurements from the Sonar
-	class Measure
-	{
-		public double distance = 0;
-		public double direction = 0.0;
-
-		Measure(double dist, double dir)
-		{
-			distance = dist;
-			direction = dir;
-			while (direction >= 2.0 * Math.PI)
-				direction -= 2.0 * Math.PI;
-			while (direction < 0.0)
-				direction += 2.0 * Math.PI;
-		}
-
-		public void set(double dist, double dir)
-		{
-			distance = dist;
-			direction = dir;
-			while (direction >= 2.0 * Math.PI)
-				direction -= 2.0 * Math.PI;
-			while (direction < 0.0)
-				direction += 2.0 * Math.PI;
-		}
-	}
+	}	
 }
