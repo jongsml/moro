@@ -44,10 +44,6 @@ public class Laser extends Device{
 	double rotStep = 1.0;     // one degree
 	double numSteps = 0;
 	
-	// JB: The use of the booleans detect and scan (and Device.running) makes the code very complex
-	// and easy to break. See executeCommand() and nextStep(). This could do with a decent refactoring!
-	boolean detect = false;
-	boolean scan = false;
 	int range = 100;          // maximum range
 
 	Measure detectMeasure = null;
@@ -172,50 +168,12 @@ public class Laser extends Device{
 	 */
 	public void executeCommand(String command) {
 		// handles the Rotation of the robot
-		if(command.indexOf("ROTATETO") > -1) {
-			rotStep = 4.0;
-			double direction = Math.abs(Double.parseDouble(command.trim().substring(9).trim()));
-			while(direction < 0.0)
-				direction+=360.0;
-			while(direction > 360.0)
-				direction-=360.0;
-			 
-			// Calculates the difference between the current angle of the robot and the required angle
-			double dirDiff = direction - Math.toDegrees(localPos.getT()); 
-			
-			// Turns the robot Clockwise
-			if(dirDiff >= 0.0 && dirDiff <= 180.0) {
-				numSteps = dirDiff / rotStep;
-				orientation = 1;
-			}
-			// Turns the robot Counterclockwise
-			else if(dirDiff >= 0.0 && dirDiff > 180.0) {
-				numSteps = (360.0 - dirDiff) / rotStep;
-				orientation = -1;
-			}
-			// Turns the robot Counterclockwise
-			else if(dirDiff < 0.0 && -dirDiff <= 180.0) {
-				numSteps = -dirDiff / rotStep;
-				orientation = -1;
-			}
-			// Turns the robot clockwise
-			else if(dirDiff < 0.0 && -dirDiff > 180.0) {
-				numSteps = (360.0 + dirDiff) / rotStep;
-				orientation = 1;
-			}
-			running = true;
-		}
-		else if(command.equalsIgnoreCase("READ")) {
-			// Writes the angle and distance back to Controller
-			writeOut("t=" + Double.toString(this.localPos.getT()) + " d=" + Double.toString(this.read(true)));
-		}
-		else if(command.equalsIgnoreCase("SCAN")) {
+		if(command.equalsIgnoreCase("SCAN")) {
 			rotStep = 1.0;
 			// Clears the measures of the last scan
 			scanMeasures.clear();
 			numSteps = 360.0 / rotStep;
 			orientation = 1;
-			scan = true;
 			// send the list of measures
 			commands.add("GETMEASURES");
 			running = true;
@@ -231,68 +189,27 @@ public class Laser extends Device{
 			// Sends the array back to Controller
 			writeOut(measures);
 		}
-		else if(command.equalsIgnoreCase("DETECT")) {
-			detect = true;
-			rotStep = 8.0;
-			if(detectMeasure != null) {
-				writeOut("LASER DETECT d=" + detectMeasure.distance + " t=" + detectMeasure.direction);
-				detectMeasure = null;
-			}
-			else if(localPos.getT() == Math.toRadians(45.0)) {   // ?????????????
-				// move the laser to the left position
-				commands.add("ROTATETO 315");
-				// repeats this command
-				commands.add("DETECT");
-			}
-			else if(localPos.getT() == Math.toRadians(315.0)) {  // ??????????????
-				// move the laser to the right position
-				commands.add("ROTATETO 45");
-				// repeats this command
-				commands.add("DETECT");
-			}
-			else {
-				// move the laser to the right position
-				commands.add("ROTATETO 45");
-				// repeats this command
-				commands.add("DETECT");
-			}
-		}
-		else
-			writeOut("DECLINED");
 	}
 
 
 	public void nextStep() {
 		if(running && numSteps > 0.0) {
-			if(numSteps < 1.0)
+			if(numSteps < 1.0) {
 				localPos.rototras(0.0, 0.0, orientation*numSteps*rotStep);
-			else
+			} else {
 				localPos.rototras(0.0, 0.0, orientation*rotStep);
+			}
 			getEnvironment().repaint();
 			numSteps-=1.0;
 			running = true;
-		}
-		else if(running) {
+		} else if(running) {
 			running = false;
-			if(!detect && !scan)
-				writeOut("LASER ARRIVED");
 		}
-		if(detect) {
-			double distance = this.read(true);
-			if(distance > -1.0) {
-				if(detectMeasure == null)
-					// creates new array detectMeasure
-					detectMeasure = new Measure(distance, localPos.getT());
-				else if(detectMeasure.distance > distance)
-					// adds the distance and angle in the detectMeasure array
-					detectMeasure.set(distance, localPos.getT());
-			}
-		}
-		else if(scan) {
-			double distance = this.read(false);
-			if(distance > -1.0)
-				// adds the distance and angle in the scanMeasures array
-				scanMeasures.add(new Measure(distance, localPos.getT()));   
+		
+		double distance = this.read(false);
+		if(distance > -1.0) {
+			// adds the distance and angle in the scanMeasures array
+			scanMeasures.add(new Measure(distance, localPos.getT()));   
 		}
 	}
 
