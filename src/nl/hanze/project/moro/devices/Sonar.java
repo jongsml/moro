@@ -45,12 +45,6 @@ public class Sonar extends Device
 	double rotStep = 360.0; 
 	double numSteps = 0;
 	
-	// JB: The use of the booleans detect and scan (and Device.running) makes
-	// the code very complex
-	// and easy to break. See executeCommand() and nextStep(). This could do
-	// with a decent refactoring!
-	boolean detect = false;
-	boolean scan = false;
 	Measure detectMeasure = null;
 	ArrayList<Measure> scanMeasures = new ArrayList<Measure>();
 
@@ -158,32 +152,26 @@ public class Sonar extends Device
 	@Override
 	public void executeCommand(String command)
 	{
-		if (command.equalsIgnoreCase("SCAN"))
-		{
+		if (command.equalsIgnoreCase("SCAN")) {
 			rotStep = 1.0;
 			scanMeasures.clear();
 			numSteps = 360 / rotStep; 
 			orientation = 1;
-			scan = true;
+
 			// send the list of measures
 			commands.add("GETMEASURES");
 			running = true;
-		}
-		else if (command.equalsIgnoreCase("GETMEASURES"))
-		{
+		} else if (command.equalsIgnoreCase("GETMEASURES")) {
 			Measure measure = null;
 			//String measures = "SCAN";
 			String measures = "SRC=S1";
 			
-			for (int i = 0; i < scanMeasures.size(); i++)
-			{
+			for (int i = 0; i < scanMeasures.size(); i++) {
 				measure = scanMeasures.get(i);
 				measures += " d=" + measure.distance + " t=" + measure.direction;
 			}
 			writeOut(measures);
 		}
-				else
-			writeOut("DECLINED");
 	}
 	
 	@Override
@@ -193,8 +181,7 @@ public class Sonar extends Device
 	 */
 	public void nextStep()
 	{
-		if (running && numSteps > 0.0)
-		{
+		if (running && numSteps > 0.0) {
 			if (numSteps < 1.0)
 				localPos.rototras(0.0, 0.0, orientation * numSteps * rotStep);// orientation of sensors.
 			else
@@ -203,23 +190,16 @@ public class Sonar extends Device
 			defineSonar((int) (range - (range * numSteps / 360))); // redefine sonar circle
 			getEnvironment().repaint(); // repaint sonar beam
 			numSteps -= 1.0; //number of steps ie scans decreased by one
-			running = true;
-			
-		}
-		else if (running)
-		{
-			running = false;
+			running = true;	
+		} else if (running) {
 			defineSonar(10);
 			getEnvironment().repaint();
-			if (!detect && !scan)
-				writeOut("Sonar ARRIVED"); // done with scanning
+			running = false;
 		}
-		
-		if (scan) {
-			double distance = this.read(false);
-			if (distance > -1.0)
-				scanMeasures.add(new Measure(distance, localPos.getT())); // ??????????????
-		
+
+		double distance = this.read(false);
+		if (distance > -1.0) {
+			scanMeasures.add(new Measure(distance, localPos.getT())); // ??????????????
 		}
 	}
 	
