@@ -23,13 +23,12 @@ package nl.hanze.project.moro.view;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.SystemColor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JPanel;
 
-import nl.hanze.project.moro.devices.PositionType;
-import nl.hanze.project.moro.model.OccupancyMap;
+import nl.hanze.project.moro.robot.device.PositionType;
+import nl.hanze.project.moro.robot.event.OccupancyMapEvent;
+import nl.hanze.project.moro.robot.event.OccupancyMapListener;
 
 /**
  
@@ -37,7 +36,7 @@ import nl.hanze.project.moro.model.OccupancyMap;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class OccupancyMapView extends JPanel implements ActionListener
+public class OccupancyMapView extends JPanel implements OccupancyMapListener
 {
 	private int cellDim = 10;
 	private int width = 510;
@@ -96,18 +95,12 @@ public class OccupancyMapView extends JPanel implements ActionListener
 			g.drawLine(0, j * cellDim, width, j * cellDim);
 	}
 
-	/**
-	 * Perform actions from objects who added this object as an action listener.
-	 */
-	
-	public void actionPerformed(ActionEvent e)
+	@Override
+	public void onChange(OccupancyMapEvent event) 
 	{
-		// Only respond to objects of type OccupancyMap. 
-		if (e.getSource() instanceof OccupancyMap)
-		{
-			// Get the grid from the map and repaint.
-			grid = ((OccupancyMap) e.getSource()).getGrid();
-			repaint();
-		}
+		// Update the grid using the OccupancyMap.
+		grid = event.getOccupancyMap().getGrid();
+		// repaint this component.
+		repaint();
 	}
 }

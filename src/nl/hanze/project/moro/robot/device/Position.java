@@ -1,4 +1,4 @@
-package nl.hanze.project.moro.devices;
+package nl.hanze.project.moro.robot.device;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *

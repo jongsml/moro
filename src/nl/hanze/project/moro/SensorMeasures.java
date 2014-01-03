@@ -1,13 +1,13 @@
 package nl.hanze.project.moro;
-import nl.hanze.project.moro.devices.Device;
-import nl.hanze.project.moro.devices.Position;
+import nl.hanze.project.moro.robot.device.AbstractDevice;
+import nl.hanze.project.moro.robot.device.Position;
 
 
 public class SensorMeasures
 {
     private final Position position;
     private final double[] measures;
-    private final Device source;
+    private final AbstractDevice source;
 
     /**
      * SensorMeasures constructor.
@@ -15,7 +15,7 @@ public class SensorMeasures
      * @param source The source device of the measurement.
      * @param measures The measured data.
      */
-    public SensorMeasures(Position position, Device source, double[] measures)
+    public SensorMeasures(Position position, AbstractDevice source, double[] measures)
     {
         this.position = position;
         this.measures = measures;
@@ -42,7 +42,7 @@ public class SensorMeasures
     /**
      * @return The device which took the measurement.
      */
-    public Device getSource()
+    public AbstractDevice getSource()
     {
         return source;
     }

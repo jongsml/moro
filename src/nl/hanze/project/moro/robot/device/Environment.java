@@ -1,4 +1,4 @@
-package nl.hanze.project.moro.devices;
+package nl.hanze.project.moro.robot.device;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -39,6 +39,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import nl.hanze.project.moro.model.Obstacle;
 import nl.hanze.project.moro.model.OccupancyMap;
+import nl.hanze.project.moro.robot.Robot;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -59,7 +60,7 @@ public class Environment extends JPanel
 	public Environment() 
 	{
 		// defines the starting position of the robot (name, x, y, direction, environment)
-		robot = new Robot("R1", 90, 200, 270, this);
+		robot = new Robot(90, 200, 270, this);
 	}
 	
 	

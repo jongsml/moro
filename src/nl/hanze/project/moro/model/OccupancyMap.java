@@ -37,18 +37,15 @@ import java.util.List;
 import java.util.Map;
 
 import nl.hanze.project.moro.SensorMeasures;
-import nl.hanze.project.moro.devices.Device;
-import nl.hanze.project.moro.devices.Laser;
-import nl.hanze.project.moro.devices.Position;
-import nl.hanze.project.moro.devices.PositionType;
+import nl.hanze.project.moro.robot.device.AbstractDevice;
+import nl.hanze.project.moro.robot.device.Position;
+import nl.hanze.project.moro.robot.device.PositionType;
+import nl.hanze.project.moro.robot.device.sensor.Laser;
 
-
-
-@SuppressWarnings("serial")
 public class OccupancyMap 
 {
-		private List<Obstacle> obstacles = new ArrayList<Obstacle>();
-		private Map<Point, PositionType> map = new HashMap<Point, PositionType>();
+	private List<Obstacle> obstacles = new ArrayList<Obstacle>();
+	private Map<Point, PositionType> map = new HashMap<Point, PositionType>();
 
 	int cellDim = 10;
 	int width = 510;
@@ -259,8 +256,6 @@ public class OccupancyMap
 		// The offset 
 		double rx = Math.round(position.getX() + 20.0 * Math.cos(position.getT()));
 		double ry = Math.round(position.getY() + 20.0 * Math.sin(position.getT()));
-		System.out.println("rx: " + rx);
-		System.out.println("ry: " + ry);
 		
 		int dir = (int) Math.round(Math.toDegrees(position.getT()));
 
@@ -283,7 +278,7 @@ public class OccupancyMap
 			// TODO: Implement opaque as well. Currently impossible, because the source device is unknown.
 			// Maybe this should not be done here anyway.
 			// If the value of the measurement is less than 100, an obstacle of some type is found.
-			Device sensor = sm.getSource();
+			AbstractDevice sensor = sm.getSource();
 			if (measures[d] < 100.0)
 			{
 				if (sensor instanceof Laser)

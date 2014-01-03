@@ -45,11 +45,11 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.hanze.project.moro.SensorMeasures;
-import nl.hanze.project.moro.devices.Device;
-import nl.hanze.project.moro.devices.Position;
-import nl.hanze.project.moro.devices.PositionType;
-import nl.hanze.project.moro.devices.Robot;
 import nl.hanze.project.moro.model.OccupancyMap;
+import nl.hanze.project.moro.robot.Robot;
+import nl.hanze.project.moro.robot.device.Device;
+import nl.hanze.project.moro.robot.device.Position;
+import nl.hanze.project.moro.robot.device.PositionType;
 
 
 
@@ -94,7 +94,7 @@ public class Controller
 			e.printStackTrace();
 		}
         // Inform robot/device in other thread where to write.
-        robot.setOutput(output);		
+        //robot.setOutput(output);		
 	}
 
 	public void quit()
@@ -113,7 +113,8 @@ public class Controller
 			return false;
 		
 		// Send the command to the robot.
-		int linesExpected = robot.sendCommand(command);
+		//int linesExpected = robot.sendCommand(command);
+		int linesExpected = 0;
 		List<String> results = new ArrayList<String>();
 		try
 		{
@@ -293,7 +294,8 @@ public class Controller
 	 */
 	private Object getDeviceByName(String name)
 	{
-		return robot.getDeviceByName(name);
+		//return robot.getDeviceByName(name);
+		return null;
 	}
 	
 	/**
@@ -353,7 +355,8 @@ public class Controller
 		
 		// Remove the SRC= from the source.
 		String sensorName = source.substring(4).trim();
-		return new SensorMeasures(position, (Device) getDeviceByName(sensorName), measures);
+		//return new SensorMeasures(position, (Device) getDeviceByName(sensorName), measures);
+		return null;
 	}
 	
 	private Polygon calculateNewShape(Position newPos, Polygon original)
@@ -405,4 +408,3 @@ public class Controller
 		return map;
 	}
 }
-

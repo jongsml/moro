@@ -1,4 +1,4 @@
-package nl.hanze.project.moro.devices;
+package nl.hanze.project.moro.robot.device;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -34,54 +34,42 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.geom.Point2D;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 
-public abstract class Device implements Runnable
-{
+import nl.hanze.project.moro.robot.Robot;
+import nl.hanze.project.moro.robot.event.DeviceEvent;
+import nl.hanze.project.moro.robot.event.DeviceListener;
+
+public abstract class AbstractDevice implements Device, Runnable
+{	
+	/**
+	 * Listeners that will be informed when the device is ready for a new task.
+	 */
+	protected List<DeviceListener> listeners = new ArrayList<DeviceListener>();	
+	
 	private String name;                  // the name of this device
 	private Environment environment;          // a reference to the environment
 	private Robot robot;
 	private Polygon shape = new Polygon();        // the device's shape in local coords
-    Boolean fillShape = true;          // filled or not
-
-
+    protected Boolean fillShape = true;          // filled or not
     
-	public Environment getEnvironment() {
-		return environment;
-	}
-
-	public void setEnvironment(Environment environment) {
-		this.environment = environment;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) 
-	{
-		this.name = name;
-	}
 	// the robot current position
-	Position robotPos = new Position();
+	protected Position robotPos = new Position();
 	// origin of the device reference frame with regards to the robot frame
-	Position localPos;
+	protected Position localPos;
 
-	Color bgColor = Color.red;
-	Color fgColor = Color.blue;
+	protected Color bgColor = Color.red;
+	protected Color fgColor = Color.blue;
 
 	protected Thread thread = null;
-	protected long delay = 5;
+	protected long delay = 3;
 	protected boolean alive = false; // Is the device started?
 	protected boolean running = false; // Is the device executing a command?
 	protected Object lock = new Object();
-	protected ArrayList<String> commands = new ArrayList<String>();
-
-	protected PrintWriter output = null;
 
 	// the constructor
-	public Device(String name, Robot robot, Position position, Environment environment) 
+	public AbstractDevice(String name, Robot robot, Position position, Environment environment) 
 	{
 		this.name = name;
 		this.setRobot(robot);
@@ -97,7 +85,6 @@ public abstract class Device implements Runnable
 		getShape().addPoint(x, y);
 	}
 
-
     protected void resetShape()
     {
         getShape().reset();
@@ -105,7 +92,6 @@ public abstract class Device implements Runnable
 
     public void paint(Graphics g)
     {
-
         // reads the robot's current position
         getRobot().readPosition(robotPos);
         // draws the shape
@@ -126,30 +112,30 @@ public abstract class Device implements Runnable
         ((Graphics2D) g).setColor(fgColor);
         ((Graphics2D) g).drawPolygon(globalShape);
     }
-
-	/*
-	 * Sends a command to the robot in a new thread
-	 */
-	public boolean sendCommand(String command) {
-		commands.add(command);
-		synchronized(lock) {
-			// Wake up another thread that is waiting for commands.
-			lock.notify();
-		}
-		return true;
+	
+    @Override
+	public boolean isRunning()
+	{
+		return running;
 	}
-
-	/*
-	 * WriteOut() sends the status back to Controller
-	 * by using the stream.
+	
+	/**
+	 * Determines if the device is busy processing a task, or if it's ready to receive
+	 * a new task.
+	 * 
+	 * @param isRunning determines if the device is processing a task.
 	 */
-	protected synchronized void writeOut(String data) {
+	public void isRunning(boolean isRunning)
+	{
+		running = isRunning;
 		
-		if(output != null)
-			output.println(data);
-		else
-			System.out.println(this.name + " output not initialized");
-	}
+		// if this device should run a thread will notified to process the task.
+		if (running) {
+			synchronized(lock) {
+				lock.notify();
+			}			
+		}
+	}	
 	
 	/*
 	 * Starts the simulation
@@ -170,7 +156,7 @@ public abstract class Device implements Runnable
 			// thread might be waiting for commands so give it an interrupt.
 			thread.interrupt();
 		}
-	}
+	}	
 	
 	/*
 	 * 
@@ -186,13 +172,7 @@ public abstract class Device implements Runnable
 					synchronized(this) {
 						Thread.sleep(delay);
 					}
-				}
-				else if(commands.size() > 0) {
-					// extracts the the next command and executes it
-					String command = commands.remove(0);
-					executeCommand(command);
-				}
-				else {
+				} else {
 					// waits for a new command
 					synchronized(lock) {
 						// suspend this thread and wait to be notified about 
@@ -210,14 +190,27 @@ public abstract class Device implements Runnable
 		while (alive);
 	}
 	
-	public abstract void executeCommand(String command);
-	
 	public abstract void nextStep();
 
-	public void setOutput(PrintWriter output) {
-		this.output = output;
+	public Environment getEnvironment() {
+		return environment;
 	}
 
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
+	}
+	
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) 
+	{
+		this.name = name;
+	}	
+	
 	public Robot getRobot() {
 		return robot;
 	}
@@ -234,4 +227,29 @@ public abstract class Device implements Runnable
 		this.shape = shape;
 	}
 
+    @Override
+    public void addDeviceListener(DeviceListener listener)
+    {
+    	listeners.add(listener);
+    }
+    
+    @Override
+    public void removeDeviceListener(DeviceListener listener)
+    {
+    	listeners.remove(listener);
+    }
+    
+    @Override
+    public boolean hasDeviceListener(DeviceListener listener)
+    {
+    	return listeners.contains(listener);
+    }
+	
+    @Override
+	public void fireDeviceReady(DeviceEvent event)
+	{		
+		for(DeviceListener listener : listeners) {
+			listener.onDeviceReady(event);
+		}
+	}
 }

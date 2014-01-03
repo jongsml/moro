@@ -29,20 +29,13 @@ package nl.hanze.project.moro;
  * @version 1.0
  */
 
-import java.awt.Color;
-
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
-import nl.hanze.project.moro.controller.Controller;
-import nl.hanze.project.moro.devices.Environment;
+import nl.hanze.project.moro.robot.device.Environment;
 import nl.hanze.project.moro.view.ControlWindow;
 import nl.hanze.project.moro.view.SimulWindow;
 
 public class TestApplication 
 {
 	Environment environment = null;
-	Controller controller = null;
 	SimulWindow simulWindow = null;
 	ControlWindow controlWindow = null;
 
@@ -57,11 +50,11 @@ public class TestApplication
 		simulWindow = new SimulWindow(environment);// This window shows the entire environment and the robot moving in it.
 		simulWindow.validate();
 		simulWindow.setVisible(true);
-
-		controller = new Controller(environment.getRobot());
-		controlWindow = new ControlWindow(controller);	// This window shows what the robot discovers
+		
+		controlWindow = new ControlWindow(environment.getRobot());	// This window shows what the robot discovers
 		controlWindow.validate();
 		controlWindow.setVisible(true);
+		
 	}
 
 	public static void main(String[] args) {

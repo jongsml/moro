@@ -1,4 +1,4 @@
-package nl.hanze.project.moro.devices;
+package nl.hanze.project.moro.robot.device.sensor;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -23,9 +23,15 @@ import java.awt.Polygon;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.List;
 
 import nl.hanze.project.moro.geom.Measure;
 import nl.hanze.project.moro.model.Obstacle;
+import nl.hanze.project.moro.robot.Robot;
+import nl.hanze.project.moro.robot.device.Environment;
+import nl.hanze.project.moro.robot.device.Position;
+import nl.hanze.project.moro.robot.event.DeviceEvent;
+import nl.hanze.project.moro.robot.event.SensorEvent;
 
 
 
@@ -38,10 +44,10 @@ import nl.hanze.project.moro.model.Obstacle;
  * @author Davide Brugali
  * @version 1.0
  */
-public class Sonar extends Device
+public class Sonar extends AbstractSensor
 {
 
-	private final int range = 100; // maximum range, same as the laser
+	private int range = 100; // maximum range, same as the laser
 	int orientation = 1; // 1: clockwise -1: otherwise
 	double rotStep = 360.0; 
 	double numSteps = 0;
@@ -149,31 +155,6 @@ public class Sonar extends Device
 		}
 		return minDistance;
 	}
-
-	@Override
-	public void executeCommand(String command)
-	{
-		if (command.equalsIgnoreCase("SCAN")) {
-			rotStep = 1.0;
-			scanMeasures.clear();
-			numSteps = 360 / rotStep; 
-			orientation = 1;
-
-			// send the list of measures
-			commands.add("GETMEASURES");
-			running = true;
-		} else if (command.equalsIgnoreCase("GETMEASURES")) {
-			Measure measure = null;
-			//String measures = "SCAN";
-			String measures = "SRC=S1";
-			
-			for (int i = 0; i < scanMeasures.size(); i++) {
-				measure = scanMeasures.get(i);
-				measures += " d=" + measure.distance + " t=" + measure.direction;
-			}
-			writeOut(measures);
-		}
-	}
 	
 	@Override
 	/**
@@ -195,7 +176,13 @@ public class Sonar extends Device
 		} else if (running) {
 			defineSonar(10);
 			getEnvironment().repaint();
-			running = false;
+			
+			// make the sensor ready to perform a new scan.
+			isRunning(false);
+			// notify listeners that the sensor has finished scanning.
+			fireScanCompleted(new SensorEvent(this));
+			// notify listeners that the sensor is ready for a new task.
+			fireDeviceReady(new DeviceEvent(this));
 		}
 
 		double distance = this.read(false);
@@ -216,5 +203,35 @@ public class Sonar extends Device
 			double t = i / 360.0;
 			this.addPoint((int) (x + radius * Math.cos( t * 2 * Math.PI)), (int) (y + radius * Math.sin( t * 2 * Math.PI)));
 		}
-	}	
+	}
+
+	@Override
+	public void setRange(int size) {
+		if (size <= 0) {
+			throw new IllegalArgumentException(String.format("size should be larger than 0, received %d", size));
+		}
+		
+		range = size;
+	}
+
+	@Override
+	public int getRange() {
+		return range;
+	}
+
+	@Override
+	public void scan() {
+		rotStep = 1.0;
+		scanMeasures.clear();
+		numSteps = 360 / rotStep; 
+		orientation = 1;
+		
+		isRunning(true);
+	}
+	
+	@Override
+	public List<Measure> getResults()
+	{
+		return scanMeasures;
+	}
 }

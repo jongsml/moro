@@ -1,17 +1,15 @@
-package nl.hanze.project.moro.pathfinding;
+package nl.hanze.project.moro.robot.algorithm;
 
 
 import java.awt.Point;
 import java.util.LinkedList;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import nl.hanze.project.moro.controller.Controller;
-import nl.hanze.project.moro.devices.Position;
-import nl.hanze.project.moro.devices.PositionType;
 import nl.hanze.project.moro.model.OccupancyMap;
+import nl.hanze.project.moro.robot.device.Position;
+import nl.hanze.project.moro.robot.device.PositionType;
 
-public class MoveAI implements MovingAlgorithm, Runnable
+public class MoveAI implements Pathfinding, Runnable
 {
 	private boolean running = false;
 	private Thread thisThread;
@@ -390,6 +388,13 @@ public class MoveAI implements MovingAlgorithm, Runnable
 			}
 		}
 		return WALL_NOT_FOUND;
+	}
+
+
+	@Override
+	public void runAlgorithm() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

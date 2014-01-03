@@ -1,4 +1,4 @@
-package nl.hanze.project.moro.devices;
+package nl.hanze.project.moro.robot.device.sensor;
 /*
  * (C) Copyright 2005 Davide Brugali, Marco Torchiano
  *
@@ -35,12 +35,18 @@ import java.awt.Polygon;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.List;
 
 import nl.hanze.project.moro.geom.Measure;
 import nl.hanze.project.moro.model.Obstacle;
+import nl.hanze.project.moro.robot.Robot;
+import nl.hanze.project.moro.robot.device.Environment;
+import nl.hanze.project.moro.robot.device.Position;
+import nl.hanze.project.moro.robot.event.DeviceEvent;
+import nl.hanze.project.moro.robot.event.SensorEvent;
 
-public class Laser extends Device{
-		
+public class Laser extends AbstractSensor
+{		
 	int orientation = 1;      // 1: clockwise  -1: otherwise
 	double rotStep = 1.0;     // one degree
 	double numSteps = 0;
@@ -56,11 +62,11 @@ public class Laser extends Device{
 		// Color of the laser
 		bgColor = Color.cyan;
 		
-		// Defines the size of the laser (length 100 and width 2)
+		// Defines the size of the laser (length 100 and width 4)
 		this.addPoint(0, 2);
-		this.addPoint(100, 2);
-		this.addPoint(100, -2);
-		this.addPoint(0, -2);
+        this.addPoint(100, 2);
+        this.addPoint(100, -2);
+        this.addPoint(0, -2);
 	}
 
 	
@@ -87,8 +93,9 @@ public class Laser extends Device{
 			Obstacle obstacle = (Obstacle) getEnvironment().getObstacles().get(i);
 			
 			// Checks if obstacle is a Wall
-			if(obstacle.isOpaque())
+			if(obstacle.isOpaque()) {
 				continue;
+			}
 			
 			// Uses pointToObstacle() to check if there is a collision with a obstacle
 			// and returns the distance to that obstacle
@@ -164,34 +171,6 @@ public class Laser extends Device{
 		return minDistance;
 	}
 
-	/*
-	 * @see Device#executeCommand(java.lang.String)
-	 */
-	public void executeCommand(String command) {
-		// handles the Rotation of the robot
-		if(command.equalsIgnoreCase("SCAN")) {
-			rotStep = 1.0;
-			// Clears the measures of the last scan
-			scanMeasures.clear();
-			numSteps = 360.0 / rotStep;
-			orientation = 1;
-			// send the list of measures
-			commands.add("GETMEASURES");
-			running = true;
-		}
-		else if(command.equalsIgnoreCase("GETMEASURES")) {
-			Measure measure = null;
-			String measures = "SCR=L1";
-			// Files the measures array with the individual measure
-			for(int i=0; i < scanMeasures.size(); i++) {
-				measure = scanMeasures.get(i);
-				measures += " d=" + measure.distance + " t=" + measure.direction;
-			}
-			// Sends the array back to Controller
-			writeOut(measures);
-		}
-	}
-
 
 	public void nextStep() {
 		if(running && numSteps > 0.0) {
@@ -204,13 +183,52 @@ public class Laser extends Device{
 			numSteps-=1.0;
 			running = true;
 		} else if(running) {
-			running = false;
+			// make the sensor ready to perform a new scan.
+			isRunning(false);
+			// notify listeners that the sensor has finished scanning.
+			fireScanCompleted(new SensorEvent(this));
+			// notify listeners that the sensor is ready for a new task.
+			fireDeviceReady(new DeviceEvent(this));
 		}
-		
+
 		double distance = this.read(false);
 		if(distance > -1.0) {
 			// adds the distance and angle in the scanMeasures array
 			scanMeasures.add(new Measure(distance, localPos.getT()));   
 		}
+	}
+
+
+	@Override
+	public void setRange(int size) {
+		if (size <= 0) {
+			throw new IllegalArgumentException(String.format("size should be larger than 0, received %d", size));
+		}
+		
+		range = size;
+	}
+
+
+	@Override
+	public int getRange() {
+		return range;
+	}
+	
+	@Override
+	public void scan()
+	{
+		rotStep = 1.0;
+		// Clears the measures of the last scan
+		scanMeasures.clear();
+		numSteps = 360.0 / rotStep;
+		orientation = 1;
+		
+		isRunning(true);
+	}
+	
+	@Override
+	public List<Measure> getResults()
+	{
+		return scanMeasures;
 	}
 }

@@ -32,9 +32,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-import nl.hanze.project.moro.controller.Controller;
-import nl.hanze.project.moro.pathfinding.MoveAI;
-import nl.hanze.project.moro.pathfinding.MovingAlgorithm;
+import nl.hanze.project.moro.robot.Robot;
 
 /*
  * Title:        The MObile RObot Simulation Environment
@@ -47,20 +45,18 @@ import nl.hanze.project.moro.pathfinding.MovingAlgorithm;
 
 @SuppressWarnings("serial")
 public class ControlWindow extends JFrame 
-{
-	private MovingAlgorithm currentAlgorithm;
-
-	
+{	
 	JPanel contentPane;
 	JMenuBar menuBar = new JMenuBar();
 	JMenu menuSimulation = new JMenu();
 	JMenuItem menuSimulationStart = new JMenuItem();
 	JMenuItem menuSimulationQuit = new JMenuItem();
 
-	Controller controller = null;
+	private Robot robot;
 
-	public ControlWindow(Controller p_controller) {
-		controller = p_controller;
+	public ControlWindow(Robot robot) {
+		this.robot = robot;
+		
 		// See remark in SimulWindow about the statement below
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		// ------------------------- contentPane -----------------------------------
@@ -92,7 +88,9 @@ public class ControlWindow extends JFrame
 		setBounds(510, 0, 510, 460);
 		// draw the OccupancyMap
 		OccupancyMapView occupancyMapView = new OccupancyMapView();
-		controller.addActionListener(occupancyMapView);
+		// add map listener.
+		robot.addOccupancyMapListener(occupancyMapView);
+		// add OccupancyMap to frame.
 		this.getContentPane().add(occupancyMapView);
 		
 		this.setJMenuBar(menuBar);
@@ -100,36 +98,17 @@ public class ControlWindow extends JFrame
 		// Disable window resizing.
 		setResizable(false);
 	}
-
-	/**
-	 * Check if the current algoritm is running.
-	 * @return
-	 */
-	private boolean algorithmIsRunning()
-	{
-		if (currentAlgorithm != null && currentAlgorithm.isRunning())
-		{
-			System.out.println("Algorithm is currently running");
-			return true;
-		}
-		return false;
-	}
 	
 	// --------------------------- Menu actions ----------------------------------
 	/** Menu Simulation Start*/
 	void menuSimulationStart_actionPerformed(ActionEvent e) 
 	{
-		// hierbij starten we het algoritme!
-		if (algorithmIsRunning())
-			return;
-		currentAlgorithm = new MoveAI();
-		controller.start();
-		currentAlgorithm.runAlgorithm(controller);
+		robot.start();
 	}
 
 	/** Menu Simulation Quit*/
 	void menuSimulationQuit_actionPerformed(ActionEvent e) {
-		controller.quit();
+		//controller.quit();
 	}
 	/**Overridden so we can exit when window is closed*/
 	protected void processWindowEvent(WindowEvent e) {

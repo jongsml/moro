@@ -31,8 +31,6 @@ package nl.hanze.project.moro.view;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
@@ -48,10 +46,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.plaf.basic.BasicMenuBarUI;
 import javax.xml.parsers.ParserConfigurationException;
 
-import nl.hanze.project.moro.devices.Environment;
+import nl.hanze.project.moro.robot.device.Environment;
 
 import org.xml.sax.SAXException;
 
