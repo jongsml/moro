@@ -30,6 +30,7 @@ package nl.hanze.project.moro.model;
  */
 
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -189,12 +190,71 @@ public class OccupancyMap
 	}
 	
 	/**
+	 * Returns the dimension of a cell within the grid.
+	 * 
+	 * @return the dimension of a cell.
+	 */
+	public Dimension getCellSize()
+	{
+		return new Dimension(cellDim, cellDim);
+	}
+	
+	/**
+	 * Returns the <code>PositionType</code> for the field located at
+	 * the given <i>x<i> and <i>y</i> index. Will return PositionType.UNKNOWN 
+	 * if no field exists at the given <i>x</i> and <i>y</i> index.
+	 * 
+     * @param x the column index of the field.
+     * @param y the row index of the field.
+	 * @return the <code>PositionType</code> for the given field.
+	 */
+	public PositionType getFieldType(int x, int y)
+	{
+		PositionType fieldType = PositionType.UNKNOWN;
+		if (fieldExists(x, y)) {
+			fieldType = grid[x][y];
+		}
+		
+		return fieldType;
+	}
+	
+	/**
+     * Return <i>true</i> if the given location is within the boundary of the two-dimensional array.
+     * 
+     * @param point a Point object that represents a location in a two-dimensional array.
+     * @return <i>true</i> if given location is within boundary, otherwise <i>false</i>
+     */
+	public boolean fieldExists(Point point)
+	{
+		return fieldExists(point.x, point.y);
+	}
+	
+	/**
+     * Return <i>true</i> if the given location is within the boundary of the two-dimensional array.
+     * 
+     * @param x the column index of the grid to check.
+     * @param y the row index of the grid to check.
+     * @return <i>true</i> if given location is within boundary, otherwise <i>false</i>
+     */
+	public boolean fieldExists(int x, int y)
+    {
+        boolean isValid = true;
+        if(x < 0 || y < 0) {
+            isValid = false;
+        }
+        if(x >= grid.length || y >= grid[0].length) {
+            isValid = false;
+        }
+        return isValid;
+    }
+	
+	/**
 	 * Checking if an unknown is next to an empty PositionType
 	 * @param x the X of the point in the grid	
 	 * @param y the Y of the point in the grid
 	 * @return
 	 */
-	private boolean isUnknownAdjacentToEmpty(int x, int y)
+	public boolean isUnknownAdjacentToEmpty(int x, int y)
 	{
 		return grid[x][y] == PositionType.UNKNOWN && 
 			(	
@@ -272,11 +332,12 @@ public class OccupancyMap
 	public void update(SensorMeasures sm)
 	{
 		Position position = sm.getPosition();
+
 		double[] measures = sm.getMeasures();
 		// The offset 
 		double rx = Math.round(position.getX() + 20.0 * Math.cos(position.getT()));
 		double ry = Math.round(position.getY() + 20.0 * Math.sin(position.getT()));
-		
+
 		int dir = (int) Math.round(Math.toDegrees(position.getT()));
 
 		// Shamelessly stolen from the original OccupancyMapView code.
@@ -293,7 +354,7 @@ public class OccupancyMap
 			// XXX: This may lead to rounding errors.
 			double fx = Math.round(rx + measures[d] * Math.cos(Math.toRadians(i)));
 			double fy = Math.round(ry + measures[d] * Math.sin(Math.toRadians(i)));
-			
+
 			PositionType posType;
 			// TODO: Implement opaque as well. Currently impossible, because the source device is unknown.
 			// Maybe this should not be done here anyway.
@@ -311,6 +372,7 @@ public class OccupancyMap
 				posType = PositionType.EMPTY;
 			// Update the grid.
 			updateGrid(rx, ry, fx, fy, posType);
+
 			// XXX: To be obsoleted.
 			setPositionType((int) fx, (int) fy, posType);
 		}

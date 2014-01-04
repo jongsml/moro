@@ -1,8 +1,12 @@
 package nl.hanze.project.moro.robot.algorithm;
 
+import java.awt.Dimension;
+
 import nl.hanze.project.moro.commands.ScanCommand;
 import nl.hanze.project.moro.model.OccupancyMap;
 import nl.hanze.project.moro.robot.Robot;
+import nl.hanze.project.moro.robot.device.Position;
+import nl.hanze.project.moro.robot.device.PositionType;
 import nl.hanze.project.moro.robot.event.DeviceEvent;
 import nl.hanze.project.moro.robot.event.DeviceListener;
 
@@ -98,14 +102,14 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 		try {
 			// a flag that determines if the algorithm is still running.
 			boolean isRunning = !robot.getMap().isMapComplete();
-
-			// the map that can be used to determine where we are.
-			OccupancyMap map = robot.getMap();
 			
 			// let the algorithm run until the environment has been scanned.
 			while (isRunning) {
+				System.out.println(shouldScan());
 				
-				robot.executeCommand(new ScanCommand(robot));
+				if (shouldScan()) {
+					robot.executeCommand(new ScanCommand(robot));
+				}
 				
 				// wait until robot is ready again.
 				synchronized(lock) {
@@ -115,6 +119,43 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Returns <i>true</i> if the field on which the robot resides or one
+	 * of the adjacent field are unknown to the robot, <i>false</i> otherwise.
+	 * 
+	 * @return <i>true</i> if the robot is near unknown terrain.
+	 */
+	public boolean shouldScan()
+	{
+		// a flag indicating if the environment should be scanned.
+		boolean shouldScan = false;
+		
+		// the map that can be used to determine where we are.
+		OccupancyMap map = robot.getMap();
+		// the actual size of a map cell.
+		Dimension cellDim = map.getCellSize();
+		// current position of the robot.
+		Position position = robot.getPosition();
+		
+		// get adjacent fields on horizontal axis.
+		for (int x = -1; x <= 1; x++) {
+			// get adjacent fields on vertical axis.
+			for (int y = -1; y <= 1; y++) {
+				// column and row index of the adjacent field.
+				int colIndex = ((int) position.getX()) / cellDim.width + x;
+				int rowIndex = ((int) position.getX()) / cellDim.width + y;
+				
+				// make sure this adjacent field exists.
+				if (map.fieldExists(colIndex, rowIndex)) {
+					// determine if this position is unknown.
+					shouldScan = (map.getFieldType(colIndex, rowIndex) == PositionType.UNKNOWN);
+				}
+			}
+		}
+		
+		return shouldScan;
 	}
 
 	@Override
