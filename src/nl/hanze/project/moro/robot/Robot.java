@@ -786,6 +786,11 @@ public class Robot implements Device, DeviceListener, SensorListener
 	@Override
 	public synchronized void onDeviceReady(DeviceEvent e) 
 	{
+		// nothing to do anymore, let the algorithm run.
+		if (tasks.isEmpty() && algorithm.isRunning()) {
+			fireDeviceReady(new DeviceEvent(this));
+		}
+		
 		// check if we have any remaining commands and the robot is ready.
 		if (!isRunning() && !tasks.isEmpty()) {
 			// remove the first command from the list and execute it.

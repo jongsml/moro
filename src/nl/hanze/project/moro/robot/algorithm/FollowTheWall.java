@@ -2,6 +2,8 @@ package nl.hanze.project.moro.robot.algorithm;
 
 import java.awt.Dimension;
 
+import nl.hanze.project.moro.commands.MoveForwardCommand;
+import nl.hanze.project.moro.commands.RotateRightCommand;
 import nl.hanze.project.moro.commands.ScanCommand;
 import nl.hanze.project.moro.model.OccupancyMap;
 import nl.hanze.project.moro.robot.Robot;
@@ -102,15 +104,18 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 		try {
 			// a flag that determines if the algorithm is still running.
 			boolean isRunning = !robot.getMap().isMapComplete();
-			
+
 			// let the algorithm run until the environment has been scanned.
 			while (isRunning) {
-				System.out.println(shouldScan());
-				
+				// only scan the environment when necessary.
 				if (shouldScan()) {
 					robot.executeCommand(new ScanCommand(robot));
 				}
 				
+				if (!robot.willCollide(Robot.Action.MOVE_FORWARD, 30)) {
+					robot.executeCommand(new MoveForwardCommand(robot, 30));
+				}
+
 				// wait until robot is ready again.
 				synchronized(lock) {
 					lock.wait();
@@ -131,30 +136,30 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 	{
 		// a flag indicating if the environment should be scanned.
 		boolean shouldScan = false;
-		
 		// the map that can be used to determine where we are.
 		OccupancyMap map = robot.getMap();
 		// the actual size of a map cell.
 		Dimension cellDim = map.getCellSize();
-		// current position of the robot.
-		Position position = robot.getPosition();
 		
-		// get adjacent fields on horizontal axis.
+		// get adjacent fields on the horizontal axis.
+		mainloop:
 		for (int x = -1; x <= 1; x++) {
-			// get adjacent fields on vertical axis.
+			// get adjacent fields on the vertical axis.
 			for (int y = -1; y <= 1; y++) {
-				// column and row index of the adjacent field.
-				int colIndex = ((int) position.getX()) / cellDim.width + x;
-				int rowIndex = ((int) position.getX()) / cellDim.width + y;
+				// column and row index of an adjacent field.
+				int colIndex = ((int) robot.getPosition().getX()) / cellDim.width + x;
+				int rowIndex = ((int) robot.getPosition().getY()) / cellDim.width + y;
 				
-				// make sure this adjacent field exists.
-				if (map.fieldExists(colIndex, rowIndex)) {
-					// determine if this position is unknown.
-					shouldScan = (map.getFieldType(colIndex, rowIndex) == PositionType.UNKNOWN);
+				// make sure this field exists and determine it's position type.
+				if (map.fieldExists(colIndex, rowIndex) && 
+						map.getFieldType(colIndex, rowIndex) == PositionType.UNKNOWN) {
+					shouldScan = true;
+					// break loop.
+					break mainloop;
 				}
 			}
 		}
-		
+
 		return shouldScan;
 	}
 
