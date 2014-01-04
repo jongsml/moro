@@ -72,7 +72,27 @@ public class OccupancyMap
 	 */
 	public boolean isMapComplete() 
 	{
-		return getUnknownAdjacent() == null;
+		// flag that determines if the map is complete.
+		boolean isMapComplete = true;
+		
+		int columnCount = grid.length - 1;
+		int columnIndex = 0;
+		// iterate through all columns.
+		while (columnIndex < columnCount && isMapComplete) {
+			int rowCount = grid[columnIndex].length - 1;
+			int rowIndex = 0;
+			// iterate through all rows of the current column.
+			while (rowIndex < rowCount && isMapComplete) {
+				// the map is considered complete until an unknown position is found.
+				isMapComplete = (getPositionType(columnIndex, rowIndex) != PositionType.UNKNOWN);
+				// increment row index.
+				rowIndex++;
+			}
+			// increment column index
+			columnIndex++;
+		}
+
+		return isMapComplete;
 	}
 	
 	/**
@@ -152,10 +172,10 @@ public class OccupancyMap
 	 */
 	public Point getUnknownAdjacent()
 	{
+
 		// Checking the outside boundary is useless. Therefore, start off with x,y=1,1.
-		for (int x = 1; x < grid.length-1; x++)
-			for (int y = 1; y < grid[x].length - 1; y++)
-			{
+		for (int x = 1; x < grid.length-1; x++) {
+			for (int y = 1; y < grid[x].length - 1; y++) {
 				// Controleren of een unknown ook een empty omzich heen heeft anders is die niet relevant.
 				// Omdat die dan binnen of buiten een type muur ligt.(Hier bevinden zich namelijk geen empty) 
 					if (isUnknownAdjacentToEmpty(x, y))
@@ -163,7 +183,7 @@ public class OccupancyMap
 						// Multiply with the cell dimension to get the real x/y
 						 return new Point(x * cellDim, y * cellDim);
 			}
-		
+		}
 		// No point 
 		return null;
 	}

@@ -833,12 +833,12 @@ public class Robot implements Device, DeviceListener, SensorListener
 		countDown.countDown();
 		// process this when all sensors are finished.
 		if (countDown.getCount() == 0) {
-			// allow the algorithm to perform a new step.
-			if (algorithm.isRunning()) {
-				System.out.println("works");
+			// nothing to do anymore, let the algorithm run.
+			if (tasks.isEmpty() && algorithm.isRunning()) {
+				fireDeviceReady(new DeviceEvent(this));
 			}
 			
-			// allow the robot to execute the following command.
+			// execute one of the remaining commands.
 			if (!isRunning() && !tasks.isEmpty()) {
 				executeCommand(tasks.remove(0));
 			}

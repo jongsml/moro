@@ -1,10 +1,8 @@
 package nl.hanze.project.moro.robot.algorithm;
 
-import nl.hanze.project.moro.commands.MoveForwardCommand;
-import nl.hanze.project.moro.commands.RotateRightCommand;
 import nl.hanze.project.moro.commands.ScanCommand;
+import nl.hanze.project.moro.model.OccupancyMap;
 import nl.hanze.project.moro.robot.Robot;
-import nl.hanze.project.moro.robot.device.Position;
 import nl.hanze.project.moro.robot.event.DeviceEvent;
 import nl.hanze.project.moro.robot.event.DeviceListener;
 
@@ -99,12 +97,15 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 	{
 		try {
 			// a flag that determines if the algorithm is still running.
-			boolean isRunning = robot.getMap().isMapComplete();
+			boolean isRunning = !robot.getMap().isMapComplete();
+
+			// the map that can be used to determine where we are.
+			OccupancyMap map = robot.getMap();
 			
 			// let the algorithm run until the environment has been scanned.
-			while (!isRunning) {
-				Position pos = new Position();
-				robot.readPosition(pos);
+			while (isRunning) {
+				
+				robot.executeCommand(new ScanCommand(robot));
 				
 				// wait until robot is ready again.
 				synchronized(lock) {
@@ -114,14 +115,6 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		robot.executeCommand(new ScanCommand(robot));
-		robot.executeCommand(new MoveForwardCommand(robot, 90));
-		robot.executeCommand(new ScanCommand(robot));
-		robot.executeCommand(new RotateRightCommand(robot));
-		robot.executeCommand(new ScanCommand(robot));
-		robot.executeCommand(new MoveForwardCommand(robot));
-		robot.executeCommand(new ScanCommand(robot));
 	}
 
 	@Override

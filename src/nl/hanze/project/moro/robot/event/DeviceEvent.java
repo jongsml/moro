@@ -1,6 +1,6 @@
 package nl.hanze.project.moro.robot.event;
 
-import nl.hanze.project.moro.robot.device.AbstractDevice;
+import nl.hanze.project.moro.robot.device.Device;
 
 /**
  * A <code>DeviceEvent</code> gets delivered whenever a <code>Device</code> is done executing
@@ -21,7 +21,7 @@ public class DeviceEvent {
 	/**
 	 * Specifies the device on which the event initially occurred.
 	 */
-	protected AbstractDevice device;
+	protected Device device;
 	
 	/**
 	 * Creates a new <code>DeviceEvent</code> using a copy constructor.
@@ -39,7 +39,7 @@ public class DeviceEvent {
 	 * 
 	 * @param device the device on which the event initially occurred.
 	 */
-	public DeviceEvent(AbstractDevice device)
+	public DeviceEvent(Device device)
 	{
 		this(device, !device.isRunning());
 	}
@@ -51,7 +51,7 @@ public class DeviceEvent {
 	 * @param device the device on which the event initially occurred.
 	 * @param isReady determines if the device is ready to process a new task.
 	 */
-	public DeviceEvent(AbstractDevice device, boolean isReady)
+	public DeviceEvent(Device device, boolean isReady)
 	{
 		this.device = device;
 		this.isReady = isReady;
@@ -62,7 +62,7 @@ public class DeviceEvent {
 	 * 
 	 * @return the device on which the event initially occurred.
 	 */
-	public AbstractDevice getDevice()
+	public Device getDevice()
 	{
 		return device;
 	}
