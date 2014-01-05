@@ -96,6 +96,77 @@ public class Robot implements Device, DeviceListener, SensorListener
 	private List<OccupancyMapListener> mapListeners = new ArrayList<OccupancyMapListener>();
 	
 	/**
+	 * This enum type consists of predefined direction which the algorithm
+	 * knows about.
+	 * 
+	 * @author Chris Harris
+	 * @version 0.0.1
+	 * @since 0.0.1
+	 */
+	public static enum Direction
+	{
+		NORTH(270), EAST(0), SOUTH(90), WEST(180);
+		
+		/**
+		 * The angle in degrees associated with the given direction.
+		 */
+		private final int angle;
+		
+		/**
+		 * Creates a new <code>Direction</code> with the given angle in degrees.
+		 * 
+		 * @param angle the angle in degrees.
+		 */
+		private Direction(int angle) 
+		{
+			this.angle = angle;
+		}
+		
+		/**
+		 * Returns the angle in degrees for this direction.
+		 * 
+		 * @return the angle in degrees.
+		 */
+		public int getAngle()
+		{
+			return angle;
+		}
+		
+		/**
+		 * Returns the <code>Direction</code> for the given angle, 
+		 * or <i>null</i> if no direction exists for the given angle.
+		 * 
+		 * @param angle the angle to find a <code>Direction</code> for.
+		 * @return the <code>Direction</code> that was found.
+		 */
+		public static Direction getDirection(int angle)
+		{
+			// flag indicating if a direction was found.
+			boolean contains = false;
+			int index = 0;
+			
+			// all directions and the direction matching the angle.
+			Direction direction = null;
+			Direction[] directions = values();
+			
+			// find direction with the given angle.
+			while (index < directions.length && !contains) {
+				// direction found.
+				if (directions[index].getAngle() == angle) {
+					// update direction.
+					direction = directions[index];
+					// update flag.
+					contains = true;
+				}
+				// increment index.
+				index++;
+			}
+			
+			return direction;
+		}
+	}	
+	
+	/**
 	 * This enum type consists of predefined actions which the robot can perform.
 	 * 
 	 * @author Chris Harris
@@ -108,16 +179,16 @@ public class Robot implements Device, DeviceListener, SensorListener
 		/**
 		 * The value associated with the given action.
 		 */
-		private final int value;
+		private final int orientation;
 		
 		/**
 		 * Creates a new <code>Action</code> which the robot can perform.
 		 * 
-		 * @param value the value associated with the given action.
+		 * @param orientation the value associated with the given action.
 		 */
-		private Action(int value) 
+		private Action(int orientation) 
 		{
-			this.value = value;
+			this.orientation = orientation;
 		}
 		
 		/**
@@ -125,9 +196,9 @@ public class Robot implements Device, DeviceListener, SensorListener
 		 * 
 		 * @return the value associated with the given action.
 		 */
-		public int getValue() 
+		public int getOrientation() 
 		{
-			return value;
+			return orientation;
 		}
 	}
 	
@@ -164,13 +235,21 @@ public class Robot implements Device, DeviceListener, SensorListener
 	}	
 	
 	/**
-	 * Returns the direction in degrees the robot is facing.
+	 * Returns the direction the robot is facing.
 	 * 
-	 * @return the direction in degrees.
+	 * @return the direction the robot is facing.
 	 */
-	public double getDirection()
+	public Direction getDirection() 
 	{
-		return Math.toDegrees(position.getT());
+		// the angle in degrees the robot is facing.
+		int angle = (int) Math.round(Math.toDegrees(getPosition().getT()));
+		// prevent null literal from being returned.
+		if (angle == 360) {
+			angle = 0;
+		}
+		
+		// the direction the robot is facing.
+		return Direction.getDirection(angle);
 	}
 
 	public void readPosition(Position position)
@@ -256,14 +335,10 @@ public class Robot implements Device, DeviceListener, SensorListener
 		 */
 		switch (action) {
 			case MOVE_FORWARD:
-				willCollide = willMoveCollide(action, amount);
-				break;
-			case ROTATE_RIGHT:
-				willCollide = willRotateCollide(action, amount);
-				break;
 			case MOVE_BACKWARDS:
 				willCollide = willMoveCollide(action, amount);
 				break;
+			case ROTATE_RIGHT:
 			case ROTATE_LEFT:
 				willCollide = willRotateCollide(action, amount);
 				break;
@@ -289,24 +364,20 @@ public class Robot implements Device, DeviceListener, SensorListener
 		// Copy the robot's position.
 		Position newPos = new Position();
 		getPosition().copyTo(newPos);
-		
+
 		// If this isn't done in this way, rounding errors will occur.
 		while (numMoveSteps > 0.0)
 		{
-			if (numMoveSteps < 1.0)
-				newPos.rototras(numMoveSteps * moveStep * action.getValue(), 0.0, 0.0);
-			else
-				newPos.rototras(moveStep * action.getValue(), 0.0, 0.0);
+			if (numMoveSteps < 1.0) {
+				newPos.rototras(numMoveSteps * moveStep * action.getOrientation(), 0.0, 0.0);
+			} else {
+				newPos.rototras(moveStep * action.getOrientation(), 0.0, 0.0);
+			}
 			numMoveSteps -= 1.0;
 		}
 		
 		Polygon newPlatform = calculateNewShape(newPos, getPlatform().getShape());
-		if (polygonCollides(newPlatform))
-		{
-			//System.out.println("Would collide. Ignoring command");
-			return true;
-		}
-		return false;
+		return polygonCollides(newPlatform);
 	}
 	
 	/**
@@ -331,19 +402,14 @@ public class Robot implements Device, DeviceListener, SensorListener
 		while (numRotSteps > 0.0)
 		{
 			if (numRotSteps < 1.0)
-				newPos.rototras(0.0, 0.0, numRotSteps * action.getValue() * rotStep);
+				newPos.rototras(0.0, 0.0, numRotSteps * action.getOrientation() * rotStep);
 			else
-				newPos.rototras(0.0, 0.0, action.getValue() * rotStep);
+				newPos.rototras(0.0, 0.0, action.getOrientation() * rotStep);
 			numRotSteps -= 1.0;
 		}
 		
 		Polygon newPlatform = calculateNewShape(newPos, getPlatform().getShape());
-		if (polygonCollides(newPlatform))
-		{
-			//System.out.println("Would collide. Ignoring command");
-			return true;
-		}
-		return false;
+		return polygonCollides(newPlatform);
 	}	
 	
 	/**
@@ -378,7 +444,8 @@ public class Robot implements Device, DeviceListener, SensorListener
 	{
 		Polygon newShape = new Polygon();
 		Point2D point = new Point2D.Double();
-		for (int i = 0; i < original.npoints; i++) {
+		for (int i = 0; i < original.npoints; i++)
+		{
 			point.setLocation(original.xpoints[i], original.ypoints[i]);
 			// calculates the coordinates of the point according to the robot position
 			newPos.rototras(point);

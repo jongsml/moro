@@ -3,11 +3,12 @@ package nl.hanze.project.moro.robot.algorithm;
 import java.awt.Dimension;
 
 import nl.hanze.project.moro.commands.MoveForwardCommand;
+import nl.hanze.project.moro.commands.RotateLeftCommand;
 import nl.hanze.project.moro.commands.RotateRightCommand;
 import nl.hanze.project.moro.commands.ScanCommand;
 import nl.hanze.project.moro.model.OccupancyMap;
 import nl.hanze.project.moro.robot.Robot;
-import nl.hanze.project.moro.robot.device.Position;
+import nl.hanze.project.moro.robot.Robot.Direction;
 import nl.hanze.project.moro.robot.device.PositionType;
 import nl.hanze.project.moro.robot.event.DeviceEvent;
 import nl.hanze.project.moro.robot.event.DeviceListener;
@@ -104,18 +105,28 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 		try {
 			// a flag that determines if the algorithm is still running.
 			boolean isRunning = !robot.getMap().isMapComplete();
-
+			
 			// let the algorithm run until the environment has been scanned.
-			while (isRunning) {
-				// only scan the environment when necessary.
+			while (isRunning) {				
+				/*
+				 * scan the environment when the robot reaches one or more unknown
+				 * fields, otherwise we move the robot towards these unknown fields.
+				 */
 				if (shouldScan()) {
 					robot.executeCommand(new ScanCommand(robot));
+				} else {		
+					System.out.println(Math.toDegrees(robot.getPosition().getT()));
+					System.out.println(robot.getDirection());					
+					
+					// try to move the robot forward.
+					if (!robot.willCollide(Robot.Action.MOVE_FORWARD, 1)) {
+						robot.executeCommand(new MoveForwardCommand(robot, 1));
+					} else if (!robot.willCollide(Robot.Action.ROTATE_RIGHT, 90)) {
+						robot.executeCommand(new RotateRightCommand(robot));
+					} else if (!robot.willCollide(Robot.Action.ROTATE_LEFT, 90)) {
+						robot.executeCommand(new RotateLeftCommand(robot));
+					}
 				}
-				
-				if (!robot.willCollide(Robot.Action.MOVE_FORWARD, 30)) {
-					robot.executeCommand(new MoveForwardCommand(robot, 30));
-				}
-
 				// wait until robot is ready again.
 				synchronized(lock) {
 					lock.wait();
@@ -127,12 +138,26 @@ public class FollowTheWall implements Pathfinding, DeviceListener, Runnable
 	}
 	
 	/**
+	 * Returns the distance to the first wall in the given direction, if no
+	 * wall is found the given distance will be returned instead.
+	 * 
+	 * @param direction the direction which we should look for.
+	 * @param distance the distance to look ahead.
+	 * @return the actual distance to the first wall.
+	 */
+	private int wallIsNear(Direction direction, int distance)
+	{
+		
+		return 0;
+	}
+	
+	/**
 	 * Returns <i>true</i> if the field on which the robot resides or one
 	 * of the adjacent field are unknown to the robot, <i>false</i> otherwise.
 	 * 
 	 * @return <i>true</i> if the robot is near unknown terrain.
 	 */
-	public boolean shouldScan()
+	private boolean shouldScan()
 	{
 		// a flag indicating if the environment should be scanned.
 		boolean shouldScan = false;
